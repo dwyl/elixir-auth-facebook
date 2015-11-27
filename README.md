@@ -1,4 +1,4 @@
-# hapi-auth-facebook so you can: ![img](http://i.stack.imgur.com/pZzc4.png)
+# hapi-auth-_facebook_ so you can: ![img](http://i.stack.imgur.com/pZzc4.png)
 [![Build Status](https://travis-ci.org/dwyl/hapi-auth-facebook.svg)](https://travis-ci.org/dwyl/hapi-auth-facebook)
 
 :+1: Easy Facebook Authentication for Hapi Apps
