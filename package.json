@@ -8,8 +8,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "PORT=8000 nodemon index.js"
+    "test": "PORT=8000 node test/facebook.test.js",
+    "start": "PORT=8000 nodemon index.js",
+    "example": "PORT=8000 nodemon example/facebook_server.js"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,8 @@
   "homepage": "https://github.com/dwyl/hapi-auth-facebook#readme",
   "devDependencies": {
     "env2": "^2.0.4",
-    "nodemon": "^1.8.1"
+    "nodemon": "^1.8.1",
+    "tape": "^4.2.2"
   },
   "dependencies": {
     "hapi": "^11.1.2",
