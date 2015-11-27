@@ -1,0 +1,42 @@
+{
+  "name": "hapi-auth-facebook",
+  "version": "1.0.0",
+  "description": "Simple Facebook Authentication for Hapi.js Apps",
+  "main": "lib/index.js",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "PORT=8000 node test/facebook.test.js",
+    "start": "PORT=8000 nodemon index.js",
+    "example": "PORT=8000 nodemon example/facebook_server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dwyl/hapi-auth-facebook.git"
+  },
+  "keywords": [
+    "Facebook",
+    "Auth",
+    "Authentication",
+    "Simple",
+    "Easy",
+    "Tested"
+  ],
+  "author": "@jackcarlisle + @des-des + @hdrdavies + @nelsonic @dwyl",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/dwyl/hapi-auth-facebook/issues"
+  },
+  "homepage": "https://github.com/dwyl/hapi-auth-facebook#readme",
+  "devDependencies": {
+    "env2": "^2.0.4",
+    "nodemon": "^1.8.1",
+    "tape": "^4.2.2"
+  },
+  "dependencies": {
+    "hapi": "^11.1.2",
+    "querystring": "^0.2.0"
+  }
+}
