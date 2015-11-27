@@ -16,3 +16,5 @@ server.register({ register: facebookAuth }, {
 server.start(function() {
   console.log("Server listening on " + server.info.uri);
 });
+
+module.exports = server;
