@@ -32,5 +32,9 @@
   "devDependencies": {
     "env2": "^2.0.4",
     "nodemon": "^1.8.1"
+  },
+  "dependencies": {
+    "hapi": "^11.1.2",
+    "querystring": "^0.2.0"
   }
 }
