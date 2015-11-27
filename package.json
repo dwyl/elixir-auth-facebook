@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "PORT=8000 nodemon index.js"
+    "start": "PORT=8000 nodemon index.js",
+    "example": "PORT=8000 nodemon example/facebook_server.js"
   },
   "repository": {
     "type": "git",
