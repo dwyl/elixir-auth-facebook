@@ -32,6 +32,7 @@
   "homepage": "https://github.com/dwyl/hapi-auth-facebook#readme",
   "devDependencies": {
     "env2": "^2.0.4",
+    "nock": "^3.3.2",
     "nodemon": "^1.8.1",
     "tape": "^4.2.2"
   },
