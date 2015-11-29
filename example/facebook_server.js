@@ -8,28 +8,31 @@ server.connection({
   port: Number(process.env.PORT)
 });
 
+var facebookAuthRequestUrl = '/authfacebook';
+
 server.register({
   register: facebookAuth,
   options: {
-    handler: function(request, reply, accessToken) {
-      reply('Your token: ' + accessToken);
-    },
-    redirectUri: '/facebookLogin',
-    tokenRequestPath: '/authFacebook'
+    handler: require('./facebook_oauth_handler'),
+    redirectUri: '/facebooklogin',
+    tokenRequestPath: facebookAuthRequestUrl
   }
 }, function (err) {
   if (err) console.log(err);
 });
 
+var createLoginButton = function() {
+  return '<a href="'+ facebookAuthRequestUrl +
+    '"><img src="http://i.stack.imgur.com/pZzc4.png"></a>'
+};
+
 server.route({
   path: '/facebook',
   method: 'GET',
   handler: function(request, reply) {
-    var btn = '<a href="' + '/authFacebook' +
-      '"><img src="http://i.stack.imgur.com/pZzc4.png"></a>';
-    reply(btn);
+    reply(createLoginButton());
   }
-})
+});
 
 
 server.start(function() {
