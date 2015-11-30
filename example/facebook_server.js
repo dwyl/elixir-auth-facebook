@@ -8,10 +8,32 @@ server.connection({
   port: Number(process.env.PORT)
 });
 
-server.register({ register: facebookAuth }, {
+var facebookAuthRequestUrl = '/authfacebook';
+
+server.register({
+  register: facebookAuth,
+  options: {
+    handler: require('./facebook_oauth_handler'),
+    redirectUri: '/facebooklogin',
+    tokenRequestPath: facebookAuthRequestUrl
+  }
 }, function (err) {
   if (err) console.log(err);
 });
+
+var createLoginButton = function() {
+  return '<a href="'+ facebookAuthRequestUrl +
+    '"><img src="http://i.stack.imgur.com/pZzc4.png"></a>'
+};
+
+server.route({
+  path: '/facebook',
+  method: 'GET',
+  handler: function(request, reply) {
+    reply(createLoginButton());
+  }
+});
+
 
 server.start(function() {
   console.log("Server listening on " + server.info.uri);
