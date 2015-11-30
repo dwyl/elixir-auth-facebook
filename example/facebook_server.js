@@ -1,5 +1,6 @@
-var Hapi        = require('hapi');
-var server      = new Hapi.Server();
+var Hapi    = require('hapi');
+var server  = new Hapi.Server();
+var assert  = require('assert');
 
 var facebookAuth = require('../lib/index.js');
 
@@ -18,7 +19,7 @@ server.register({
     tokenRequestPath: facebookAuthRequestUrl
   }
 }, function (err) {
-  if (err) console.log(err);
+  assert(!err, 'failed to load plugin');
 });
 
 var createLoginButton = function() {
