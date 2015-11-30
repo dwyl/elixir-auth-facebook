@@ -36,6 +36,7 @@ test(file + 'first nock test', function(t) {
     .get('/v2.3/oauth/access_token?')
     .reply(200, mockToken);
   server.inject(options, function(response) {
+    console.log(response);
     t.equal(response.statusCode, 200, "Mock Test Working!");
     server.stop(t.end);
   });
