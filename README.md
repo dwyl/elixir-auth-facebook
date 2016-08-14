@@ -1,5 +1,10 @@
 # hapi-auth-_facebook_ so you can: ![img](http://i.stack.imgur.com/pZzc4.png)
 [![Build Status](https://travis-ci.org/dwyl/hapi-auth-facebook.svg)](https://travis-ci.org/dwyl/hapi-auth-facebook)
+[![codecov](https://codecov.io/gh/dwyl/hapi-auth-facebook/branch/master/graph/badge.svg)](https://codecov.io/gh/dwyl/hapi-auth-facebook)
+[![Code Climate](https://codeclimate.com/github/dwyl/hapi-auth-facebook/badges/gpa.svg)](https://codeclimate.com/github/dwyl/hapi-auth-facebook)
+[![dependencies Status](https://david-dm.org/dwyl/hapi-auth-facebook/status.svg)](https://david-dm.org/dwyl/hapi-auth-facebook)
+[![devDependencies Status](https://david-dm.org/dwyl/hapi-auth-facebook/dev-status.svg)](https://david-dm.org/dwyl/hapi-auth-facebook?type=dev)
+
 
 :+1: Easy Facebook Authentication for Hapi Apps
 

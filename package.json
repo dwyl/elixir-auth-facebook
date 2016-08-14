@@ -1,6 +1,6 @@
 {
   "name": "hapi-auth-facebook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple Facebook Authentication for Hapi.js Apps",
   "main": "lib/index.js",
   "directories": {
@@ -31,15 +31,12 @@
   },
   "homepage": "https://github.com/dwyl/hapi-auth-facebook#readme",
   "devDependencies": {
-    "env2": "^2.0.4",
+    "env2": "^2.1.1",
+    "hapi": "^14.1.0",
     "istanbul": "^0.4.1",
-    "nock": "^3.3.2",
-    "nodemon": "^1.8.1",
-    "tape": "^4.2.2"
+    "nock": "^8.0.0",
+    "nodemon": "^1.10.0",
+    "tape": "^4.6.0"
   },
-  "dependencies": {
-    "assert": "^1.3.0",
-    "hapi": "^11.1.2",
-    "querystring": "^0.2.0"
-  }
+  "dependencies": {}
 }
