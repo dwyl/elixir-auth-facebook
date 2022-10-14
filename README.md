@@ -1,32 +1,59 @@
-# hapi-auth-_facebook_ so you can: ![img](http://i.stack.imgur.com/pZzc4.png)
-[![Build Status](https://travis-ci.org/dwyl/hapi-auth-facebook.svg)](https://travis-ci.org/dwyl/hapi-auth-facebook)
-[![codecov](https://codecov.io/gh/dwyl/hapi-auth-facebook/branch/master/graph/badge.svg)](https://codecov.io/gh/dwyl/hapi-auth-facebook)
-[![Code Climate](https://codeclimate.com/github/dwyl/hapi-auth-facebook/badges/gpa.svg)](https://codeclimate.com/github/dwyl/hapi-auth-facebook)
-[![dependencies Status](https://david-dm.org/dwyl/hapi-auth-facebook/status.svg)](https://david-dm.org/dwyl/hapi-auth-facebook)
-[![devDependencies Status](https://david-dm.org/dwyl/hapi-auth-facebook/dev-status.svg)](https://david-dm.org/dwyl/hapi-auth-facebook?type=dev)
+<div align="center">
 
+# `elixir-auth-facebook`  Comming Soon! See: [`#21`](https://github.com/dwyl/elixir-auth-facebook/issues/21)
 
-:+1: Easy Facebook Authentication for Hapi Apps
+![img](http://i.stack.imgur.com/pZzc4.png)
 
-Facebook Hapi plugin with ***detailed documentation***.
+_Easily_ add `Facebook` login to your `Elixir` / `Phoenix` Apps 
+with step-by-step  **_detailed_ documentation**.
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/dwyl/auth/Elixir%20CI?label=build&style=flat-square)
+[![codecov.io](https://img.shields.io/codecov/c/github/dwyl/auth/master.svg?style=flat-square)](http://codecov.io/github/dwyl/auth?branch=master)
+[![Hex.pm](https://img.shields.io/hexpm/v/auth?color=brightgreen&style=flat-square)](https://hex.pm/packages/auth)
+[![Libraries.io dependency status](https://img.shields.io/librariesio/release/hex/auth?logoColor=brightgreen&style=flat-square)](https://libraries.io/hex/auth)
+[![docs](https://img.shields.io/badge/docs-maintained-brightgreen?style=flat-square)](https://hexdocs.pm/auth/api-reference.html)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat-square)](https://github.com/dwyl/auth/issues)
+[![HitCount](http://hits.dwyl.com/dwyl/elixir-auth-facebook.svg)](http://hits.dwyl.com/dwyl/elixir-auth-facebook)
+
+</div>
 
 ## Why?
 
-Facebook authentication is used ***everywhere***! We wanted to create a reusable Hapi Plugin with readable code.
+Facebook authentication is used ***everywhere***!
+We wanted to create a reusable `Elixir` package 
+with beginner-friednly instructions and readable code.
 
 ## What?
 
-A simple and easy Hapi plugin that gives you Facebook OAuth Authentication in a few steps.
+A simple and easy Hapi plugin that gives you 
+**Facebook `OAuth` Authentication** 
+in a few steps.
 
-> If you're new to Hapi, check out: https://github.com/dwyl/learn-hapi
+> If you're new to `Elixir`, 
+> please see: [dwyl/**learn-elixir**](https://github.com/dwyl/learn-hapi)
 
 ## How?
 
+<hr />
+
+# ⚠️ WARNING: This is out-of-date see: [`#21`](https://github.com/dwyl/elixir-auth-facebook/issues/21)
 
 
-### Tutorial
+<hr />
 
-A guide for how we built an app to login with facebook with no prior knowledge.
+
+
+These instructions will guide you through setup in 6 simple steps
+by the end you will have 
+**login with `Facebook`** 
+working in your App.
+No prior experience/knowledge
+is expected/required.
+
+> **Note**: if you get stuck,
+> please let us know by opening an issue! 
+
+
 
 ### Step 1: Upgrade your personal Facebook account to a developer account
 
@@ -62,8 +89,9 @@ Inside the facebook app's **advanced** settings, specify the redirect URI near t
 
 **Note**: the redirect URI has to be an *absolute* URI - make sure you include the ```http://``` prefix.
 
-### Step 6: Make a request in your Hapi server
+### Step 6: Make a request in your `Elixir` / `Phoenix` server
 
-In your hapi server, make a request to the following url specifying your individual ```app-id``` and ```redirect-uri```
+In your `Phoenix` server, make a request to the following url specifying your individual ```app-id``` and ```redirect-uri```
 
 ![facebookRequest](https://files.gitter.im/jackcarlisle/hapi-auth-facebook/fkmD/Screenshot-from-2015-11-27-12_21_22.png)
+
