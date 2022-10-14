@@ -25,7 +25,8 @@ with beginner-friednly instructions and readable code.
 
 ## What?
 
-A simple and easy Hapi plugin that gives you 
+A simple and easy-to-use `Elixir` package 
+that gives you 
 **Facebook `OAuth` Authentication** 
 in a few steps.
 
