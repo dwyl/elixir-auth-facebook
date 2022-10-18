@@ -1,4 +1,6 @@
 defmodule ElixirAuthFacebook do
+  import Plug.Conn
+
   @moduledoc """
   Snippet to enable SSR Facebook Login for web apps.
 
@@ -9,7 +11,7 @@ defmodule ElixirAuthFacebook do
   nb: if you target Android or IOS, use the SDK.
   """
 
-  @default_callback_path "auth/facebook/callback"
+  @default_callback_path "/auth/facebook/callback"
   @default_scope "public_profile"
   @fb_dialog_oauth "https://www.facebook.com/v15.0/dialog/oauth?"
   @fb_access_token "https://graph.facebook.com/v15.0/oauth/access_token?"
@@ -50,7 +52,7 @@ defmodule ElixirAuthFacebook do
   """
   def generate_redirect_url(%Plug.Conn{host: "localhost"}) do
     check_callback_url(@default_callback_path)
-    "https://localhost:4443/" <> @default_callback_path
+    "http://localhost:4000/" <> @default_callback_path
   end
 
   def generate_redirect_url(%Plug.Conn{scheme: sch, host: h}) do
@@ -85,6 +87,17 @@ defmodule ElixirAuthFacebook do
   def debug_token_uri(token), do: @fb_debug <> params_3(token)
 
   @doc """
+  Generates the url for session info
+  """
+  defp session_info_url(token) do
+    @fb_access_token <>
+      "grant_type=fb_attenuate_token&client_id=" <>
+      app_id() <>
+      "&fb_exchange_token=" <>
+      token
+  end
+
+  @doc """
   Generates the Graph API url to query for users data.
   """
   def graph_api(access), do: @fb_profile <> "&" <> access
@@ -97,7 +110,7 @@ defmodule ElixirAuthFacebook do
     conn
     |> Phoenix.Controller.put_flash(:error, inspect(message))
     |> Phoenix.Controller.redirect(to: path)
-    |> Plug.Conn.halt()
+    |> halt()
   end
 
   # ------- MAIN
@@ -114,23 +127,24 @@ defmodule ElixirAuthFacebook do
   def handle_callback(conn, %{"state" => state, "code" => code}, term) do
     conn = Plug.Conn.assign(conn, :term, term)
 
-    with {:salt, true} <- {:salt, check_salt(state)} do
-      code
-      |> access_token_uri(conn)
-      |> HTTPoison.get!()
-      |> Map.get(:body)
-      |> Jason.decode!()
-      |> then(fn data ->
-        conn
-        |> Plug.Conn.assign(:data, data)
-        |> get_data()
-        |> get_session_info()
-        |> get_profile()
-        |> check_profile()
-      end)
-    else
-      {:salt, false} ->
+    case check_salt(state) do
+      false ->
         term.(conn, "salt false", "/")
+
+      true ->
+        code
+        |> access_token_uri(conn)
+        |> HTTPoison.get!()
+        |> Map.get(:body)
+        |> Jason.decode!()
+        |> then(fn data ->
+          conn
+          |> Plug.Conn.assign(:data, data)
+          |> get_data()
+          |> get_session_info()
+          |> get_profile()
+          |> check_profile()
+        end)
     end
   end
 
@@ -208,7 +222,6 @@ defmodule ElixirAuthFacebook do
       |> Map.merge(%{access_token: token})
       |> Map.merge(%{session_info: session_info})
       |> exchange_id()
-      |> dbg()
 
     {:ok, profile}
   end

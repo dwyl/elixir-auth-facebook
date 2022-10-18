@@ -37,18 +37,18 @@ By the end you will have **login with `Facebook`** in your **Web** App.
 > **Note**: if you get stuck,
 > please let us know by opening an issue!
 
-## Step 1: Create a Facebook app 🆕
+## Step 1: Create quickly a Facebook app 🆕
 
 You need to have a Facebook developer account. It is free.
-You will create an app and get the **credentials**.
+You will create an app and get the **credentials** in minutes.
 
-#### Step 1.1 Create or use a developer account from your personal Facebook account
+### Step 1.1 Create or use a developer account from your personal Facebook account
 
 Go to <https://developers.facebook.com/apps/>
 
 ...after logging in to your facebook account, you can 'Register Now' for a developer account.
 
-#### Step 1.2 Create an App
+### Step 1.2 Create an App
 
 - select the app type: **"consumer"**
 - provide basic info, such as:
@@ -58,7 +58,7 @@ Go to <https://developers.facebook.com/apps/>
 
 ![type](priv/type.png)
 
-#### Step 1.3 Get and save your credentials
+### Step 1.3 Get and save your credentials
 
 Once you are done, you arrive to the Dasboard.
 Select **settings**, then **basic**.
@@ -74,7 +74,7 @@ export FACEBOOK_APP_ID=xxxxx
 export FACEBOOK_APP_SECRET=xxxx
 ```
 
-#### Step 1.4 Specify the base redirect URI
+### Step 1.4 Specify the base redirect URI
 
 Lastly, you need to set the callback **base URL**.
 Your app won't work if a wrong or incomplete base URL is set.
@@ -99,7 +99,7 @@ Your app won't work if a wrong or incomplete base URL is set.
 You want to display a **login** link in one of your pages.
 It will be an external navigation to the Facebook login dialog form.
 
-#### Add a login link in your template ✨
+### Add a login link in your template ✨
 
 ```html
 <a class="your-classes" href="{@oauth_facebook_url}">
@@ -107,7 +107,7 @@ It will be an external navigation to the Facebook login dialog form.
 </a>
 ```
 
-#### Modify the template controller
+### Modify the template controller
 
 We know need to generate this "href" address and set it in the assign `@oauth_facebook_url`.
 This is done in the controller.
@@ -128,7 +128,7 @@ def index(conn, _p) do
 end
 ```
 
-#### Create the `auth/facebook/callback` endpoint 📍
+### Create the `auth/facebook/callback` endpoint 📍
 
 Once the user has filled the dialog form, he will be redirected.
 
@@ -144,9 +144,9 @@ scope "/", MyAppWeb do
 end
 ```
 
-#### Create a `FacebookAuthController`
+### Create a `FacebookAuthController`
 
-Add this code
+We need a controller to respond to the endpoint:
 
 ```elixir
 # defmodule MyAppWeb.FacebookController do
