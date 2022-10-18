@@ -17,27 +17,16 @@ Facebook authentication is used **_everywhere_**!
 More than tens of millions of people use it everyday.
 Facebook Login can be used to authenticate people without planning to access their data.
 
-We wanted to create a reusable `Elixir` package
-with beginner-friendly instructions and readable code.
-
 ## What?
-
-A simple and easy-to-use `Elixir` package that gives you
-**Facebook `OAuth` Authentication** for your **web app**
-in a few steps with a minimal API.
 
 ❗️ If you target Android or IOS, use the SDK.
 
-> If you're new to `Elixir`,
-> please see: [dwyl/**learn-elixir**](https://github.com/dwyl/learn-hapi)
+It gives you **Facebook `OAuth` Authentication** for your **app** in a few steps with a minimal API.
 
 ## How?
 
-These instructions will guide you through setup in 5 simple steps.
-By the end you will have **login with `Facebook`** in your **Web** App.
-
-> **Note**: if you get stuck,
-> please let us know by opening an issue!
+These instructions will guide you through setup in a simple steps.
+By the end you will have **login with `Facebook`** in your App.
 
 ## Step 1: Facebook App Registering 🆕
 
@@ -89,12 +78,12 @@ You will find your **credentials** under "Settings/Basic"
 
 ![credentials](priv/credentials.png)
 
-Copy the App ID and the App Secret into your `.env` file.
+Copy the App ID and the App Secret into your uncommited `.env` file.
 
 ```env
 # .env
-export FACEBOOK_APP_ID=xxxxx
-export FACEBOOK_APP_SECRET=xxxx
+APP_ID=xxxxx
+APP_SECRET=xxxx
 ```
 
 ## Step 2: The code: create a Hook
@@ -105,11 +94,10 @@ There is a listener on the click event to trigger the Facebook dialog.
 
 It will be an external navigation to the Facebook login dialog form.
 
-Once you are connected, we send the users' data to the server.
-We make a `POST` request.
-We define an endpoint, and a handler in a controller.
+Once you are connected, we send the users' data to the server with a `POST` request.
+We therefor define an endpoint, and a handler in a controller.
 
-##### Add a login link in your template ✨
+#### Add a login link in your template ✨
 
 ```html
 <button phx-hook="fbLoginHook" id="fbhook" type="button">
@@ -118,9 +106,9 @@ We define an endpoint, and a handler in a controller.
 <div id="fb-root"></div>
 ```
 
-The image is located in the "lib" folder.
+![button](lib/fb_login.png)
 
-![fb login](priv/fb_login.png)
+The image is located in the "lib" folder.
 
 #### Add the hook `fbLoginHook`
 
@@ -185,7 +173,7 @@ defmodule MyAppWeb.FbSdkAuthController do
 end
 ```
 
-It eventually sends back on object which identifies the user. 🚀
+It eventually sends back an object which identifies the user. 🚀
 
 ```elixir
 %{
