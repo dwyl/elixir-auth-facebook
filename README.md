@@ -2,9 +2,11 @@
 
 # `elixir-auth-facebook`
 
+with **`SDK`**
+
 ![img](http://i.stack.imgur.com/pZzc4.png)
 
-_Easily_ add `Facebook` login to your `Elixir` / `Phoenix` Apps
+_Easily_ add `Facebook SDK` login to your `Elixir` / `Phoenix` Apps
 with step-by-step **_detailed_ documentation**.
 
 </div>
@@ -37,16 +39,14 @@ By the end you will have **login with `Facebook`** in your **Web** App.
 > **Note**: if you get stuck,
 > please let us know by opening an issue!
 
-## Step 1: Create a Facebook app 🆕
+## Step 1: Facebook App Registering 🆕
 
-You need to have a Facebook developer account. It is free.
-You will create an app and get the **credentials**.
+#### Step 1.1 Create or use a developer account
 
-#### Step 1.1 Create or use a developer account from your personal Facebook account
+You firstly need to have a Facebook developer account.
+It is free. You get it from your personal Facebook account.
 
-Go to <https://developers.facebook.com/apps/>
-
-...after logging in to your facebook account, you can 'Register Now' for a developer account.
+<https://developers.facebook.com/apps/>
 
 #### Step 1.2 Create an App
 
@@ -58,14 +58,37 @@ Go to <https://developers.facebook.com/apps/>
 
 ![type](priv/type.png)
 
-#### Step 1.3 Get and save your credentials
-
 Once you are done, you arrive to the Dasboard.
-Select **settings**, then **basic**.
 
-![dashboard](priv/dashboard.png)
+Click on **"Facebook Login"**
 
-You will find your **credentials** there.
+![create-app](priv/create-app.png)
+
+Select **Web**
+
+![web](priv/web.png)
+
+##### Define the **site URL**:
+
+❗️ we will use **https**
+
+![site url](priv/site-url.png)
+
+##### Enable Login with the JavaScript SDK
+
+From the dashboard, navigate to "Facebook Login/Settings"
+
+Turn "Yes"
+![yes](priv/js-sdk-enable.png)
+
+![enable sdk](priv/enable-sdk.png)
+
+#### Step 1.3 Your credentials
+
+You will find your **credentials** under "Settings/Basic"
+
+![credentials](priv/credentials.png)
+
 Copy the App ID and the App Secret into your `.env` file.
 
 ```env
@@ -74,90 +97,91 @@ export FACEBOOK_APP_ID=xxxxx
 export FACEBOOK_APP_SECRET=xxxx
 ```
 
-#### Step 1.4 Specify the base redirect URI
+## Step 2: The code: create a Hook
 
-Lastly, you need to set the callback **base URL**.
-Your app won't work if a wrong or incomplete base URL is set.
+You want to display a **login button** in a template.
+This button contains a `phx-hook` to a Javascript file `fbLoginHook`.
+There is a listener on the click event to trigger the Facebook dialog.
 
-- At the bottom of the form, click on **+ Add platform**
-
-![add platform](priv/add_platform.png)
-
-- click on **Web** in the "Select Platform" modal
-
-![select platform](priv/platform.png)
-
-- a new input will appear: fill the **Site URL** with:
-  <http://localhost:4000>
-
-![base url](priv/website.png)
-
-**Note**: this is the base redirect URI, so it has to be an _absolute_ URI, not only the domain. Make sure you include the `http://` prefix.
-
-## Step 2: use the ElixirAuthFacebook module
-
-You want to display a **login** link in one of your pages.
 It will be an external navigation to the Facebook login dialog form.
 
-#### Add a login link in your template ✨
+Once you are connected, we send the users' data to the server.
+We make a `POST` request.
+We define an endpoint, and a handler in a controller.
+
+##### Add a login link in your template ✨
 
 ```html
-<a class="your-classes" href="{@oauth_facebook_url}">
+<button phx-hook="fbLoginHook" id="fbhook" type="button">
   <img src={Routes.static_path(@conn, "/images/fb_login.png")}/>
-</a>
+</button>
+<div id="fb-root"></div>
 ```
 
-#### Modify the template controller
+The image is located in the "lib" folder.
 
-We know need to generate this "href" address and set it in the assign `@oauth_facebook_url`.
-This is done in the controller.
-You can add this code for your template.
+![fb login](priv/fb_login.png)
+
+#### Add the hook `fbLoginHook`
+
+Append to the `hooks` key in the `LiveSocket` constructor, and import the file.
+
+```js
+// app.js
+import { fbLoginHook } from "./fbLoginhook.js";
+
+let liveSocket = new LiveSocket("/live", Socket, {
+  params: { _csrf_token: csrfToken },
+  hooks: { fbLoginHook },
+              ^^^^
+});
+```
+
+Copy and place the `fbLoginHook.js` file in your **js** folder.
+
+![hook](priv/login-hook.png)
+
+##### Hard-code the APP_ID
+
+Have a look into the `fbLoginHook.js` file.
+Locate the code below and use **your** APP_ID.
+
+```js
+window.fbAsyncInit = function () {
+  FB.init({
+    appId: 366589421180047,   <---- PUT YOURS
+    cookie: true,
+    xfbml: false,
+    version: "v15.0",
+  });
+```
+
+##### Define a `POST` endpoint in the router 📍
 
 ```elixir
-use MyAppWeb, :controller
+# router.ex
+pipeline :api do
+  plug :accepts, ["json"]
 
-def index(conn, _p) do
-  oauth_facebook_url =
-    ElixirAuthFacebook.generate_oauth_url(conn)
-
-  render(
-    conn,
-    "index.html",
-    oauth_facebook_url: oauth_facebook_url
-  )
+  post "/auth/sdk",
+    MyAppWeb.FbSdkAuthController, :handle
 end
 ```
 
-#### Create the `auth/facebook/callback` endpoint 📍
-
-Once the user has filled the dialog form, he will be redirected.
-
-Add this line to set the redirection in the router.
+##### Create the controller
 
 ```elixir
-#MyAppWeb.Router
+defmodule MyAppWeb.FbSdkAuthController do
+  use LiveMapWeb, :controller
+  require Logger
 
-scope "/", MyAppWeb do
-  pipe_through :browser
-  get "/auth/facebook/callback",
-    FacebookAuthController, :login
-end
-```
+  def handle(conn, params) do
+    profile = for {k, v} <- params, into: %{}, do: {String.to_atom(k), v}
 
-#### Create a `FacebookAuthController`
+    Logger.info(inspect(profile))
 
-Add this code
-
-```elixir
-# defmodule MyAppWeb.FacebookController do
-use MyAppWeb, :controller
-
-def login(conn, _,_) do
-
-  {:ok, profile} =
-    ElixirAuthFacebook.handle_callback(conn, params)
-
-  #[... process the profile for the next render..]
+    # [... process the profile and render...]
+  end
 end
 ```
 
@@ -165,9 +189,8 @@ It eventually sends back on object which identifies the user. 🚀
 
 ```elixir
 %{
-  access_token: "EAAFNaUA6VI8BAPkCCVV6q0U0tf7...",
   email: "xxxxx",
-  fb_id: "10223726006128074",
+  id: "10223726006128074",
   name: "Harry Potter",
   picture: %{
     "data" => %{
@@ -176,63 +199,21 @@ It eventually sends back on object which identifies the user. 🚀
       "url" => "xxxxx",
       "width" => 50
     }
-  },
-  session_info: "XAAFNaUA6VI8BACO99qVYqkGPxxxxx"
+  }
 }
 ```
 
-You receive a long term "access_token" and a "session_token".
-The app can interact with the Facebook eco-system on behalf of the user.
-These tokens should be saved in the database, appended to a session.
-
-> If you simply need to authenticate a user, these tokens are useless.
-
-### _Optional_:
-
-To handle errors in the dialog server/facebook, we use a
-termination function.
-It puts flash messages and redirects to a chosen path, say "/".
-
-```elixir
-def terminate(conn, message, path) do
-    conn
-    |> Phoenix.Controller.put_flash(:error, message)
-    |> Phoenix.Controller.redirect(to: path)
-    |> Plug.Conn.halt()
-end
-```
-
-You want overwrite it, if you don't want to render flash for example.
-Define a custom termination function, say `happy_end/3` in the format like above.
-Then, pass it as a third optional argument to the callback:
-
-```elixir
-{:ok, profile} =
-    ElixirAuthFacebook.handle_callback(
-        conn,
-        params,
-        &happy_end/3
-    )
-```
+> ❗️ you received the "Facebook ID" with the key `ID`.
 
 ### Notes 📝
 
 All the flow to build the Login flow can be found here:
-<https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow>
+<https://developers.facebook.com/docs/facebook-login/web>
 
 #### Meta / Privacy Concerns? 🔐
 
 No cookie is set. It just provides a user authentication.
 
-You have the tokens to do more,❗️ but need an [opinion(?) on Meta](https://archive.ph/epKXZ).
-Use this package as a last resort if you have no other option!
+❗️ do you need an [opinion(?) on Meta](https://archive.ph/epKXZ).
 
-#### Data deletion?
-
-If you want to use the package to access Metas' eco-system, then you need to provide [a data deletion option](https://developers.facebook.com/docs/facebook-login/overview)
-
-❗️ To be compliant with GDPR guidelines, you must provide the following:
-
-- A way in your app for users to request their data be deleted
-- A contact email address that people can use to reach you to request their data be deleted
-- An implementation of the data deletion callback
+Use this functionality as a last resort if you have no other option!
