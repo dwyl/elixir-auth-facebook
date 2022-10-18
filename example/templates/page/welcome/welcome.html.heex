@@ -1,0 +1,5 @@
+<section class="phx-hero">
+  <h1> Welcome <%= @profile.name %>! <strong style="color:teal;"><%= @profile.email %></strong>
+  </h1>
+</section>
+<%= live_render(@conn, MyAppWeb.MyLive, session: %{"email" => @profile.email})%>
