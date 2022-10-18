@@ -106,9 +106,9 @@ We therefor define an endpoint, and a handler in a controller.
 <div id="fb-root"></div>
 ```
 
-The image is located in the "lib" folder.
+![button](lib/fb_login.png)
 
-![fb login](priv/fb_login.png)
+The image is located in the "lib" folder.
 
 #### Add the hook `fbLoginHook`
 
