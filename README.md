@@ -4,7 +4,7 @@
 
 ![img](http://i.stack.imgur.com/pZzc4.png)
 
-A guide to _Easily_ add the `Facebook SDK` login
+A guide to _easily_ add the `Facebook SDK` login
 to your `Elixir` / `Phoenix` Apps
 with step-by-step **_detailed_ documentation**.
 
