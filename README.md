@@ -90,3 +90,4 @@ Inside the facebook app's **advanced** settings, specify the redirect URI near t
 In your `Phoenix` server, make a request to the following url specifying your individual `app-id` and `redirect-uri`
 
 ![facebookRequest](https://files.gitter.im/jackcarlisle/hapi-auth-facebook/fkmD/Screenshot-from-2015-11-27-12_21_22.png)
+
