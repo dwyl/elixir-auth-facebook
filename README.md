@@ -51,30 +51,33 @@ We follow the documentation. The process is fairly easy.
 
 <https://developers.facebook.com/docs/development/create-an-app/>
 
-Select the app type **consumer**, and provide basic info, such as:
-
-- app name (can be changed)
-- contact name
+Select the app type **consumer**, and provide basic info, such as app name (can be changed) and contact name
 
 Once you are done, you arrive to the Dasboard.
 
-Click on **"Facebook Login"**
+Click on **"Facebook Login"**, then **Web**
 
-Select **Web**
+![select fb login](priv/fb%20login.png)
 
 ### Define the **site URL**
 
 ❗️ we will use **https**, even in dev mode.
 
-### Enable Login with the JavaScript SDK
+![site url](priv/site.png)
+
+### Enable JavaScript SDK and allowed domain
 
 From the dashboard, navigate to "Facebook Login/Settings"
 
-Turn "Yes"
+Turn "Yes" on, and set the domain
+
+![sdk-domain](priv/sdk-domain.png)
 
 ### Your credentials
 
 You will find your **credentials** under "Settings/Basic"
+
+![credentials](priv/credential.png)
 
 Copy the App ID and the App Secret into your `.env` file (do **NOT** commit).
 
@@ -84,7 +87,9 @@ export FACEBOOK_APP_ID=xxxxx
 export FACEBOOK_APP_SECRET=xxxx
 ```
 
-## Step 2: The code: create a Hook
+Lastly, in the same page, complete the Data Protection Officer contact information (otherwise you get an error).
+
+## Step 2: The code
 
 You want to display a **login button** in a template.
 This button contains a `phx-hook` to a Javascript file `fbLoginHook`.
@@ -114,6 +119,8 @@ We therefor define an endpoint, and a handler in a controller.
   />
 </button>
 ```
+
+![fb button](priv/login-button-png.png)
 
 In this template, you pass the `env` variable to the DOM through the assigns.
 The Javascript Facebook script will read it to reference your app.
