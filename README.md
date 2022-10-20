@@ -32,7 +32,7 @@ These instructions will guide you through setup in 7 steps:
 - save your credentials in `.env` file,
 - create the login button in a template,
 - **paste** the Javascript module into your code,
-- create a `POST` endpoint in your `router.ex`,
+- create a new endpoint in your `router.ex`,
 - create a controller for the callback
 - setup an SSL server to enable HTTPS (easy)
 
@@ -91,13 +91,14 @@ Lastly, in the same page, complete the Data Protection Officer contact informati
 
 ## Step 2: The code
 
+> **Note**: we will need HTTPS to remove the error.
+
 You want to display a **login button** in a template.
-This button contains a `phx-hook` to a Javascript file `fbLoginHook`.
-There is a listener on the click event to trigger the Facebook dialog.
 
-It will be an external navigation to the Facebook login dialog form.
+There is a listener on the click event in the `facebook.js` module.
+It triggers the Facebook dialog form.
 
-Once you are connected, we send the users' data to the server with a `POST` request.
+Once you are connected, we send the users' data to the server.
 We therefor define an endpoint, and a handler in a controller.
 
 ### Add the login link in your template ✨
@@ -105,6 +106,7 @@ We therefor define an endpoint, and a handler in a controller.
 - add the code below in a template to render the Login button.
 
 ```html
+# index.html.heex
 <script>
   window.app_id = "<%= assigns[:app_id] %>";
 </script>
@@ -125,10 +127,23 @@ We therefor define an endpoint, and a handler in a controller.
 In this template, you pass the `env` variable to the DOM through the assigns.
 The Javascript Facebook script will read it to reference your app.
 
-- In the controller that renders this template, add:
+- In the controller that renders this template, add the `assign`.
+
+For example, suppose you want to render the button above
+in a template rendered by the controller `Page`.
+You can do:
 
 ```elixir
-assign(conn, :app_id, System.get_env("FACEBOOK_APP_ID"))
+defmodule MyAppWeb.PageController
+  use Phoenix.Controller
+
+  def index(conn, _p) do
+    conn
+    # ADD THIS LINE
+    |> assign(:app_id, System.get_env("FACEBOOK_APP_ID"))
+    |> redner("index.html")
+  end
+end
 ```
 
 ### Add the `facebook.js` module
@@ -151,19 +166,17 @@ if (fbutton) facebook(fbutton, csrfToken);
 
 - paste the `facebook.js` file in your **js** folder.
 
-> **Note**: you can create a **Hook** and add a binding `phx-hook` to the button if you use LiveView.
-
-#### Define a `POST` endpoint in the router 📍
+#### Define an endpoint in the router 📍
 
 The Facebook dialog form will `POST` a response to the server, thus you need to define such an endpoint:
 
 ```elixir
 # router.ex
-pipeline :api do
-  plug :accepts, ["json"]
+scope "/auth", LiveMapWeb do
+  pipe_through(:browser)
 
-  post "/auth/fbsdk",
-    MyAppWeb.FbSdkAuthController, :handle
+  # this is the new route
+  get("/fbk/sdk", FacebookSdkAuthController, :handle)
 end
 ```
 
@@ -175,19 +188,49 @@ We transform the object into atom form keys.
 You can further process the result and render a welcome page for example.
 
 ```elixir
-defmodule MyAppWeb.FbSdkAuthController do
-  use LiveMapWeb, :controller
-  require Logger
+defmodule MyAppWeb.FacebookSdkAuthController do
+  use MyAppWeb, :controller
+
+  action_fallback(MyAppWeb.LoginError)
 
   def handle(conn, params) do
-    profile =
-      for {k, v} <- params,
-        into: %{}, do:
-          {String.to_atom(k), v}
+    profile = into_deep(params, :picture)
 
-    Logger.info(inspect(profile))
+    # below is an example of handling the obtained "profile"
+    # you save to the database and put the data in the session
 
-    # [... process the profile and render welcome...]
+    case profile do
+      %{email: email} ->
+        # you want to pass the name or email and ID
+        user = MyApp.User.new(email)
+        user_token = MyApp.Token.user_generate(user.id)
+
+        conn
+        |> fetch_session()
+        |> put_session(:user_token, user_token)
+        |> put_session(:user_id, user.id)
+        |> put_session(:origin, "fb_sdk")
+        |> put_session(:profile, profile)
+        |> put_view(MyAppWeb.WelcomeView)
+        |> redirect(to: "/welcome")
+        |> halt()
+    end
+  end
+
+  # obtain an atom-key based map from a string-key  based map
+  defp into_atoms(strings) do
+    for {k, v} <- strings, into: %{}, do: {String.to_atom(k), v}
+  end
+
+  # update a nested key
+  defp into_deep(params, key) do
+    params
+    |> into_atoms()
+    |> Map.update!(key, fn pic ->
+      pic
+      |> Jason.decode!()
+      |> into_atoms()
+    end)
   end
 end
 ```
