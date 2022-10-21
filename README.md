@@ -1,11 +1,10 @@
 <div align="center">
 
-# `elixir-auth-facebook-SDK`
+# `elixir-auth-facebook`
 
 ![img](http://i.stack.imgur.com/pZzc4.png)
 
-A guide to _easily_ add the `Facebook SDK` login
-to your `Elixir` / `Phoenix` Apps
+_Easily_ add `Facebook` login to your `Elixir` / `Phoenix` Apps
 with step-by-step **_detailed_ documentation**.
 
 </div>
@@ -16,70 +15,58 @@ Facebook authentication is used **_everywhere_**!
 More than tens of millions of people use it everyday.
 Facebook Login can be used to authenticate people without planning to access their data.
 
+We wanted to create a reusable `Elixir` package
+with beginner-friendly instructions and readable code.
+
 ## What?
 
-This is a guide on how to implement easily the facebook SDK.
+A simple and easy-to-use `Elixir` package that gives you
+**Facebook `OAuth` Authentication** for your **web app**
+in a few steps with a minimal API.
 
-It gives you **Facebook `OAuth` Authentication** for your **app** in a few steps with a minimal API.
+❗️ If you target Android or IOS, use the SDK.
 
-> **Note**: you will need to simulate SSL, so a solution is proposed using CaddyServer
+> If you're new to `Elixir`,
+> please see: [dwyl/**learn-elixir**](https://github.com/dwyl/learn-hapi)
 
 ## How?
 
-These instructions will guide you through setup in 7 steps:
+These instructions will guide you through setup in 5 simple steps.
+By the end you will have **login with `Facebook`** in your **Web** App.
 
-- register your app in Facebooks' dev portal (easy),
-- save your credentials in `.env` file,
-- create the login button in a template,
-- **paste** the Javascript module into your code,
-- create a new endpoint in your `router.ex`,
-- create a controller for the callback
-- setup an SSL server to enable HTTPS (easy)
+> **Note**: if you get stuck,
+> please let us know by opening an issue!
 
-By the end you will have **login with `Facebook`** in your App.
+## Step 1: Create quickly a Facebook app 🆕
 
-## Step 1: Register a 🆕 app
+You need a Facebook developer account. It is free.
+You will create an app and get the **credentials** in minutes.
 
-### Create an App
+### Step 1.1 Create or use a developer account from your personal Facebook account
 
-You firstly need to have a Facebook developer account.
-It is free. You get it from your personal Facebook account.
+Go to <https://developers.facebook.com/apps/>
 
-<https://developers.facebook.com/apps/>
+...after logging in to your facebook account, you can 'Register Now' for a developer account.
 
-We follow the documentation. The process is fairly easy.
+### Step 1.2 Create an App
 
-<https://developers.facebook.com/docs/development/create-an-app/>
+- select the app type: **"consumer"**
+- provide basic info, such as:
 
-Select the app type **consumer**, and provide basic info, such as app name (can be changed) and contact name
+  - app name (can be changed)
+  - contact name
+
+![type](priv/type.png)
+
+### Step 1.3 Get and save your credentials
 
 Once you are done, you arrive to the Dasboard.
+Select **settings**, then **basic**.
 
-Click on **"Facebook Login"**, then **Web**
+![dashboard](priv/credential.png)
 
-![select fb login](priv/fb%20login.png)
-
-### Define the **site URL**
-
-❗️ we will use **https**, even in dev mode.
-
-![site url](priv/site.png)
-
-### Enable JavaScript SDK and allowed domain
-
-From the dashboard, navigate to "Facebook Login/Settings"
-
-Turn "Yes" on, and set the domain
-
-![sdk-domain](priv/sdk-domain.png)
-
-### Your credentials
-
-You will find your **credentials** under "Settings/Basic"
-
-![credentials](priv/credential.png)
-
-Copy the App ID and the App Secret into your `.env` file (do **NOT** commit).
+You will find your **credentials** there.
+Copy the App ID and the App Secret into your `.env` file which is "git-ignored".
 
 ```env
 # .env
@@ -87,156 +74,131 @@ export FACEBOOK_APP_ID=xxxxx
 export FACEBOOK_APP_SECRET=xxxx
 ```
 
-Lastly, in the same page, complete the Data Protection Officer contact information (otherwise you get an error).
+### Step 1.4 Specify the base redirect URI
 
-## Step 2: The code
+Lastly, you need to set the callback **base URL**.
+Your app won't work if a wrong or incomplete base URL is set **AND** must correspond
 
-> **Note**: we will need HTTPS to remove the error.
+- At the bottom of the form, click on **+ Add platform**, and choose **Website**
 
-You want to display a **login button** in a template.
+![add platform](priv/addplatform.png)
 
-There is a listener on the click event in the `facebook.js` module.
-It triggers the Facebook dialog form.
+- click on **Web** in the "Select Platform" modal
 
-Once you are connected, we send the users' data to the server.
-We therefor define an endpoint, and a handler in a controller.
+![select-paltform](priv/select-platform.png)
 
-### Add the login link in your template ✨
+- a new input will appear: fill the **Site URL** with:
+  <http://localhost:4000> or <https://localhost>
 
-- add the code below in a template to render the Login button.
+> **Note1**: this is the base redirect URI, so it has to be an _absolute_ URI, not only the domain. Make sure you include the `http://` prefix or `https://`.
+
+**Why HTTPS? And how?**
+In dev mode, you can use <http://localhost:4000>.
+However, when the user denies the dialog, you get a **routing error**. It expects a HTTPS routing like in production.
+For this reason, even in dev mode,you can put a reverse-proxy in front of your app and use <https://localhost> instead.
+An easy solution is to use [**Caddyserver**](https://caddyserver.com/). Check the SDK page for details.
+
+![url](priv/url.png)
+
+You can pass the key `HTTPS="TRUE"` in your `.env` file
+or pass it the configuration file (`/config.config.exs`):
+
+For example, if you decided to simulate SSL with Caddyserver, you set:
+
+```elixir
+config :elixir_auth_facebook,
+  fb_app_id: System.get_env("FACEBOOK_APP_ID"),
+  fb_app_secret: System.get_env("FACEBOOK_APP_SECRET")
+  https: "true"
+```
+
+## Step 2: use the ElixirAuthFacebook module
+
+You want to display a **login link** in one of your pages.
+It brings the user to the Facebook dialog form.
+
+### Add a "Login with Facebook" link in your template ✨
+
+Suppose you render the file `/lib/app_web/templates/page/index.html.heex`.
+Add the code below:
 
 ```html
-# index.html.heex
-<script>
-  window.app_id = "<%= assigns[:app_id] %>";
-</script>
-<div id="fb-root"></div>
-
-<button id="fbhook" type="button">
+<a class="your-classes" href="{@oauth_facebook_url}">
   <img
-    width="250"
-    alt="fb login"
-    class=""
-    src="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64"
-  />
-</button>
+  src="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64""
+  with="250" alt="facebook login button" />
+</a>
 ```
 
-![fb button](priv/login-button-png.png)
+### Modify the template controller
 
-In this template, you pass the `env` variable to the DOM through the assigns.
-The Javascript Facebook script will read it to reference your app.
+This `href` address is an "assign" `@oauth_facebook_url`.
+This is build in the controller that renders your template.
+The file is: `lib/app_Web/controllers/page_controller/ex`.
 
-- In the controller that renders this template, add the `assign`.
-
-For example, suppose you want to render the button above
-in a template rendered by the controller `Page`.
-You can do:
+Add the following code:
 
 ```elixir
-defmodule MyAppWeb.PageController
-  use Phoenix.Controller
+defmodule AppWeb.PageController do
+  use Phoenix.Controler
 
   def index(conn, _p) do
-    conn
-    # ADD THIS LINE
-    |> assign(:app_id, System.get_env("FACEBOOK_APP_ID"))
-    |> redner("index.html")
+    oauth_facebook_url =
+      ElixirAuthFacebook.generate_oauth_url(conn)
+
+    render(
+      conn,
+      "index.html",
+      oauth_facebook_url: oauth_facebook_url
+   )
   end
 end
 ```
 
-### Add the `facebook.js` module
+### Create the `auth/facebook/callback` endpoint 📍
 
-- add these lines in the **App.js** file:
+Once the user has filled the dialog form, he will be redirected.
 
-```js
-// app.js
-import { facebook } from "./facebook"; // <---
-
-// <---
-const fbutton = document.getElementById("fbhook");
-if (fbutton) facebook(fbutton);
-// ---->
-```
-
-- paste the `facebook.js` file in your **js** folder.
-
-#### Define an endpoint in the router 📍
-
-The Facebook dialog form will `POST` a response to the server, thus you need to define such an endpoint:
+Add this line to set the redirection in the router.
 
 ```elixir
-# router.ex
-scope "/auth", LiveMapWeb do
-  pipe_through(:browser)
+#MyAppWeb.Router
 
-  # this is the new route
-  get("/fbk/sdk", FacebookSdkAuthController, :handle)
+scope "/", MyAppWeb do
+  pipe_through :browser
+  get "/auth/facebook/callback",
+    FacebookAuthController, :login
 end
 ```
 
-### Create the controller 🆕
+> **Note**: this is the same
 
-We are almost done!
-The callback receives the payload in the "params".
-We transform the object into atom form keys.
-You can further process the result and render a welcome page for example.
+### Create a `FacebookAuthController` 🆕
+
+We need a controller to respond to the endpoint action.
 
 ```elixir
-defmodule MyAppWeb.FacebookSdkAuthController do
-  use MyAppWeb, :controller
+defmodule AppWeb.FacebookController do
+use MyAppWeb, :controller
 
-  action_fallback(MyAppWeb.LoginError)
+def login(conn, _,_) do
 
-  def handle(conn, params) do
-    profile = into_deep(params, :picture)
-
-    # below is an example of handling the obtained "profile"
-    # you save to the database and put the data in the session
-
-    case profile do
-      %{email: email} ->
-        # you want to pass the name or email and ID
-        user = MyApp.User.new(email)
-        user_token = MyApp.Token.user_generate(user.id)
-
-        conn
-        |> fetch_session()
-        |> put_session(:user_token, user_token)
-        |> put_session(:user_id, user.id)
-        |> put_session(:origin, "fb_sdk")
-        |> put_session(:profile, profile)
-        |> put_view(MyAppWeb.WelcomeView)
-        |> redirect(to: "/welcome")
-        |> halt()
+  with {:ok, profile} <- ElixirAuthFacebook.handle_callback(conn, params) do
+      conn
+      |> put_session(:profile, profile)
+      |> put_view(AppWeb.WelcomeView)
+      |> render(:welcome, profile, profile)
     end
-  end
-
-  # obtain an atom-key based map from a string-key  based map
-  defp into_atoms(strings) do
-    for {k, v} <- strings, into: %{}, do: {String.to_atom(k), v}
-  end
-
-  # update a nested key
-  defp into_deep(params, key) do
-    params
-    |> into_atoms()
-    |> Map.update!(key, fn pic ->
-      pic
-      |> Jason.decode!()
-      |> into_atoms()
-    end)
-  end
 end
 ```
 
-Check in the terminal the received object 🚀
+It eventually sends back on object which identifies the user. 🚀
 
 ```elixir
 %{
+  access_token: "EAAFNaUA6VI8BAPkCCVV6q0U0tf7...",
   email: "xxxxx",
-  id: "10223726006128074", <-- Facebook ID
+  fb_id: "10223726006128074",
   name: "Harry Potter",
   picture: %{
     "data" => %{
@@ -249,52 +211,52 @@ Check in the terminal the received object 🚀
 }
 ```
 
-## Step 3: Enable SSL (HTTPS)
+> **Note**: the user receives a long term "access_token". The app could interact with the Facebook eco-system on behalf of the user.
+> These tokens should be saved in the database, appended to a session.
 
-One easy way is to use [CaddyServer](https://caddyserver.com/).
-It provides automatic SSL for you 🤩
+> If you simply need to authenticate a user, these tokens are useless.
 
-- install Caddyserver: <https://caddyserver.com/docs/install>
+### _Optional_:
 
-- create a file named **CaddyFile** at the root
+To handle errors in the dialog server/facebook, we can use an `action_fallback(AppWeb.LoginError)` in the controller `FacebookAuthController`, just at hte beginning.
+You will capture the errors which are not handled at the moment.
 
+An example:
+
+```elixir
+defmodule AppWeb.LoginErrorController do
+  use Phoenix.Controller
+
+  def call(conn, {:error, message}) do
+    conn
+    |> put_flash(:error, inspect(message))
+    |> put_view(AppWeb.PageView)
+    |> redirect(to: AppWeb.Router.Helpers.page_path(conn, :index))
+    |> halt()
+  end
+end
 ```
-localhost:443 {
-	handle {
-		reverse_proxy 127.0.0.1:4000
-	}
-}
-```
 
-In a terminal, just type `caddy run` from the root,
-and (given that `mix phx.server` in running in another terminal),
-you can navigate to: <https://localhost:443> 🚀
+You want overwrite it, if you don't want to render flash for example.
 
 ### Notes 📝
 
 All the flow to build the Login flow can be found here:
-<https://developers.facebook.com/docs/facebook-login/web>
-
-The APP_ID is needed by the Facebook script.
-
-> Make sure it is read. Once you have finished with the Elixir code, peak into the HTML code of your page, and look for:
-> `<script>window.process_env="123456789";</script>`
-
-If you don't see a number, check in a terminal:
-
-```bash
-$> env
-# -> check for FACEBOOK_APP_ID
-$> iex -S mix phx.server
-iex> System.get_env("FACEBOOK_APP_ID")
-```
-
-If `env` doesn't return FACEBOOK_APP_ID, run `$> source .env` and check again.
+<https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow>
 
 #### Meta / Privacy Concerns? 🔐
 
 No cookie is set. It just provides a user authentication.
 
-❗️ do you need an [opinion(?) on Meta](https://archive.ph/epKXZ).
+You have the tokens to do more,❗️ but need an [opinion(?) on Meta](https://archive.ph/epKXZ).
+Use this package as a last resort if you have no other option!
 
-Use this functionality as a last resort if you have no other option!
+#### Data deletion?
+
+If you want to use the package to access Metas' eco-system, then you need to provide [a data deletion option](https://developers.facebook.com/docs/facebook-login/overview)
+
+❗️ To be compliant with GDPR guidelines, you must provide the following:
+
+- A way in your app for users to request their data be deleted
+- A contact email address that people can use to reach you to request their data be deleted
+- An implementation of the data deletion callback
