@@ -1,0 +1,5 @@
+localhost:443 {
+	handle {
+		reverse_proxy 127.0.0.1:4000
+	}
+}
