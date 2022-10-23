@@ -99,11 +99,25 @@ Your app won't work if a wrong or incomplete base URL is set.
 
 You want to display a **login** link on one of your pages.
 
+### Create a `state` token
+
+You need to generate an "anti-CSRF" protection token.
+Type `mix gen.secret 32` in your terminal to generate one.
+Append it to the `FACEBOOK_STATE` key in your `.env` file
+Finally run `source .env`.
+
+```env
+# .env
+export FACEBOOK_APP_ID=1234...
+export FACEBOOK_APP_SECRET=A1B2C3...
+export FACEBOOK_STATE= <--- this new token
+```
+
 ### Add a login link in your template ✨
 
 Suppose you have a template "page/index/html" rendered by a controller "PageController".
 
-You can the Facebook Login link in the HTML:
+Add the Facebook Login link in the HTML:
 
 ```html.heex
 # /lib/app_web/templates/page/index.html.heex
@@ -120,7 +134,7 @@ You can the Facebook Login link in the HTML:
 The `href` value is `@oauth_facebook_url`.
 This is an "assign", a key/value map passed to the `conn` struct.
 It is set by using the module `ElixirAuthFacebook`.
-In the controller that renders this template, add the code below:
+In the controller that renders the template above, add the code below:
 
 ```elixir
 # lib/app_web/controllers/page_controller.ex
@@ -143,7 +157,7 @@ end
 
 ### Create the `/auth/facebook/callback` endpoint 📍
 
-Once the user has filled out the dialogue form, he will be redirected.
+Once the user has filled out the dialogue form, he will be redirected to your app.
 Add this line to set the redirection in the router.
 
 ```elixir
@@ -158,7 +172,7 @@ end
 
 ### Create a `FacebookAuthController`
 
-We finally need a controller to respond to the endpoint:
+Last step! We finally need a controller to respond to the endpoint:
 
 ```elixir
 # lib/app_web/controllers/facebook_auth_controller.ex
@@ -177,6 +191,8 @@ defmodule AppWeb.FacebookAuthController do
   end
 end
 ```
+
+Done! :rocket:
 
 Facebook will send the user's credentials to the endpoint you created, and the controller/callback will receive them in the `params`.
 We use again the `ElixirAuthFacebook` module to handle these "params" and deliver the user's identity.
@@ -205,38 +221,15 @@ The app can interact with the Facebook ecosystem on behalf of the user with this
 
 > If you simply need to authenticate a user, this token is useless and everything is fine.
 
-### Create a `state` token
-
-Last step! You need to generate an "anti-CSRF" protection token.
-
-Type `mix gen.secret 32` in your terminal to generate one.
-
-Append it to the `FACEBOOK_STATE` key in your `.env` file
-
-```env
-# .env
-export FACEBOOK_APP_ID=1234...
-export FACEBOOK_APP_SECRET=A1B2C3...
-export FACEBOOK_STATE= <--- this new token
-```
-
-Done! :rocket:
-
 ### A note on SSL certificate :lock:
 
 **TL;DR**: if you use this module, you don't need a reverse proxy in DEV mode.
 
-However, if the user denies the login in this mode, then the app stops since it wants to reach an HTTPS endpoint. This is the only limitation.
+:exclamation: if the user denies the login in this mode, then the app stops since it wants to reach an HTTPS endpoint. This is the only limitation.
 
-But if you want to use the SDK, then you need it :hushed:
+#### How-to HTTPS :fearful: locally?
 
-The SDK wants HTTPS, so you need to **reverse proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the internet and your app that intercepts the traffic and forwards it back to the app. A reverse proxy can present an SSL certificate to enable the HTTPS protocol.
-With this, your app can be reached at https://localhost.
-Of course, your app is still running as normal behind, on http://localhost:4000. The port differentiates these modes.
-
-#### How HTTPS :fearful: ?
-
-It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**.
+It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**. It supports automatic HTTPS by provisioning and renewing certificates through [Let’s Encrypt](https://letsencrypt.org/).
 Install it in minutes, create a file named `CaddyFile` at the root, paste the code below in it, and type `caddy run` in a different terminal. That's it :tada:
 
 ```
@@ -246,6 +239,18 @@ localhost:443 {
 	}
 }
 ```
+
+A reverse proxy can enable the HTTPS protocol with an SSL certificate authority.
+It is a piece of software between the internet and your app that intercepts the traffic and forwards it back to the app.
+Once it is running, your app can be reached at <https://localhost>.
+Of course, your app is still running as normal behind, on <http://localhost:4000>. The port differentiates these modes.
+
+### SDK?
+
+The [Facebook SDK](https://developers.facebook.com/docs/javascript/quickstart) is the alternative _authentication from the browser_.
+You **need** to reverse proxy your app (_and also enable the JSSDK in Facebook's app settings_). With Caddyserver, this is made easy for your dev mode.
+
+The SDK usage is demonstrated in the companion repo: **<TODO: elixir_auth_facebook_demo>**.
 
 ### Notes 📝
 
