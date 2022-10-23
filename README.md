@@ -2,21 +2,17 @@
 
 # `elixir-auth-facebook`
 
-Old image that was used.
-![img](http://i.stack.imgur.com/pZzc4.png)
-
-Official logo below
 ![img](https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&ccb=1-7&_nc_sid=ad8a9d&_nc_ohc=8sb1L4zz4BUAX_EvUKb&_nc_ht=scontent-cdt1-1.xx&oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&oe=6354DA64)
 
-_Easily_ add `Facebook` login to your `Elixir` / `Phoenix` Apps
-with step-by-step **_detailed_ documentation**.
-
 </div>
+
+_Easily_ add `Facebook` login to your `Elixir` / `Phoenix` apps
+with step-by-step **_detailed_ documentation**.
 
 ## Why?
 
 Facebook authentication is used **_everywhere_**!
-More than tens of millions of people use it everyday.
+Tens of millions of people use it every day.
 Facebook Login can be used to authenticate people without planning to access their data.
 
 We wanted to create a reusable `Elixir` package
@@ -26,7 +22,7 @@ with beginner-friendly instructions and readable code.
 
 A simple and easy-to-use `Elixir` package that gives you
 **Facebook `OAuth` Authentication** for your **web app**
-in a few steps with a minimal API.
+in a few steps with minimal API.
 
 ❗️ If you target Android or IOS, use the SDK.
 
@@ -36,7 +32,7 @@ in a few steps with a minimal API.
 ## How?
 
 These instructions will guide you through setup in 5 simple steps.
-By the end you will have **login with `Facebook`** in your **Web** App.
+By the end, you will have **login with `Facebook`** in your **Web** App.
 
 > **Note**: if you get stuck,
 > please let us know by opening an issue!
@@ -51,7 +47,7 @@ You will create an app and get the **credentials** in minutes.
 
 Go to <https://developers.facebook.com/apps/>
 
-...after logging in to your facebook account, you can 'Register Now' for a developer account.
+...after logging in to your Facebook account, you can 'Register Now' for a developer account.
 
 ### Step 1.2 Create an App
 
@@ -65,7 +61,7 @@ Go to <https://developers.facebook.com/apps/>
 
 ### Step 1.3 Your credentials
 
-Once you are done, you arrive to the Dasboard.
+Once you are done, you arrive at the Dasboard.
 Select **settings**, then **basic**.
 
 ![dashboard](priv/dashboard.png)
@@ -99,51 +95,59 @@ Your app won't work if a wrong or incomplete base URL is set.
 
 **Note**: this is the base redirect URI, so it has to be an _absolute_ URI, not only the domain. Make sure you include the `http://` prefix.
 
-## Step 2: use the ElixirAuthFacebook module
+## Step 2: use the `ElixirAuthFacebook` module
 
-You want to display a **login** link in one of your pages.
-It will be an external navigation to the Facebook login dialog form.
+You want to display a **login** link on one of your pages.
 
 ### Add a login link in your template ✨
 
-```html
-<a class="your-classes" href="{@oauth_facebook_url}">
+Suppose you have a template "page/index/html" rendered by a controller "PageController".
+
+You can the Facebook Login link in the HTML:
+
+```html.heex
+# /lib/app_web/templates/page/index.html.heex
+
+<a class="your-classes" href={@oauth_facebook_url}>
   <img
-    src="src"
-    ="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64"
+    src="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64"
   />
 </a>
 ```
 
 ### Modify the template controller
 
-We know need to generate this "href" address and set it in the assign `@oauth_facebook_url`.
-This is done in the controller.
-You can add this code for your template.
+The `href` value is `@oauth_facebook_url`.
+This is an "assign", a key/value map passed to the `conn` struct.
+It is set by using the module `ElixirAuthFacebook`.
+In the controller that renders this template, add the code below:
 
 ```elixir
-use MyAppWeb, :controller
+# lib/app_web/controllers/page_controller.ex
 
-def index(conn, _p) do
-  oauth_facebook_url =
-    ElixirAuthFacebook.generate_oauth_url(conn)
+defmodule AppWeb.PageController do
+  use Phoenix.Controller
 
-  render(
-    conn,
-    "index.html",
-    oauth_facebook_url: oauth_facebook_url
-  )
+  def index(conn, _p) do
+    oauth_facebook_url =
+      ElixirAuthFacebook.generate_oauth_ur(conn)
+
+    render(
+      conn,
+      "index.html",
+      oauth_facebook_url: oauth_facebook_url
+    )
+  end
 end
 ```
 
-### Create the `auth/facebook/callback` endpoint 📍
+### Create the `/auth/facebook/callback` endpoint 📍
 
-Once the user has filled the dialog form, he will be redirected.
-
+Once the user has filled out the dialogue form, he will be redirected.
 Add this line to set the redirection in the router.
 
 ```elixir
-#MyAppWeb.Router
+#AppWeb.Router
 
 scope "/", MyAppWeb do
   pipe_through :browser
@@ -157,17 +161,25 @@ end
 We finally need a controller to respond to the endpoint:
 
 ```elixir
-# defmodule MyAppWeb.FacebookController do
-use MyAppWeb, :controller
+# lib/app_web/controllers/facebook_auth_controller.ex
 
-def login(conn, _,_) do
+defmodule AppWeb.FacebookAuthController do
+  use Phoenix.Controller
 
-  {:ok, profile} =
-    ElixirAuthFacebook.handle_callback(conn, params)
+  def login(conn, params) do
+
+    {:ok, profile} =
+      ElixirAuthFacebook.handle_callback(
+        conn, params
+      )
 
   #[... process the profile for the next render..]
+  end
 end
 ```
+
+Facebook will send the user's credentials to the endpoint you created, and the controller/callback will receive them in the `params`.
+We use again the `ElixirAuthFacebook` to handle these "params" and deliver the user's identity.
 
 It eventually sends back the object below which identifies the user :eyes:
 
@@ -188,38 +200,37 @@ It eventually sends back the object below which identifies the user :eyes:
 }
 ```
 
-You receive a long term "access_token".
-The app can interact with the Facebook eco-system on behalf of the user with the token. These tokens should be saved in the database, appended to a session. If you do so, have a look at the data deletion policy at the end.
+A long-term "access_token" is delivered.
+The app can interact with the Facebook ecosystem on behalf of the user with the token. These tokens should be saved in the database and appended to a session. If you intend to do so, have a look at the data deletion policy at the end.
 
 > If you simply need to authenticate a user, this token is useless and everything is fine.
 
-### Create an extra token
+### Create a `state` token
 
-In your terminal, type `mix gen.secret 32`
-
-This code will be called `FACEBOOK_STATE`
-Copy it into your `.env` file as below:
+This is a secret token you need to generate as a "anti-CSRF" protection.
+In your terminal, type `mix gen.secret 32` to generate a token.
+Save it as `FACEBOOK_STATE` in your `.env` file as below:
 
 ```env
 # .env
 export FACEBOOK_APP_ID=1234...
 export FACEBOOK_APP_SECRET=A1B2C3...
-export FACEBOOK_STATE= <--- this new code
+export FACEBOOK_STATE= <--- this new token
 ```
 
 Done! :rocket:
 
 ### A note on SSL certificate :lock:
 
-**TL;DR**: if you use this module, you don't need a reverse-proxy in DEV mode.
+**TL;DR**: if you use this module, you don't need a reverse proxy in DEV mode.
 
 However, if the user denies the login in this mode, then the app stops since it wants to reach an HTTPS endpoint. This is the only limitation.
 
 But if you want to use the SDK, then you need it :hushed:
 
-The SDK wants HTTPS, so you need to **reverse-proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the web and your app that intercepts the traffic and forwards the traffic back to the app. A reverse-proxy can present an SSL certificate to enable the HTTPS protocole.
+The SDK wants HTTPS, so you need to **reverse proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the web and your app that intercepts the traffic and forwards the traffic back to the app. A reverse-proxy can present an SSL certificate to enable the HTTPS protocol.
 With this, your app can be reached at https://localhost.
-Of course, your app is still running as normal behind, on http://localhost:4000. These modes are differentiated by the port.
+Of course, your app is still running as normal behind, on http://localhost:4000. The port differentiates these modes.
 
 #### How HTTPS :fearful: ?
 
@@ -241,7 +252,7 @@ All the flow to build the Login flow can be found here:
 
 #### Meta / Privacy Concerns? 🔐
 
-No cookie is set. It just provides a user authentication.
+No cookie is set. It just provides user authentication.
 
 You have the tokens to do more,❗️ but need an [opinion(?) on Meta](https://archive.ph/epKXZ).
 Use this package as a last resort if you have no other option!
