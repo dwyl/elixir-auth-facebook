@@ -269,7 +269,8 @@ All the flow to build the Login flow can be found here:
 
 No cookie is set. It just provides user authentication.
 
-You have the tokens to do more,❗️ but need an [opinion(?) on Meta](https://archive.ph/epKXZ).
+You have the tokens to do more,❗️ but do you want an [opinion(?)](https://archive.ph/epKXZ) on Meta?
+
 Use this package as a last resort if you have no other option!
 
 #### Data deletion?
