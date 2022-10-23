@@ -1,5 +1,5 @@
-defmodule MyAppWeb.WelcomeController do
-  use LiveMapWeb, :controller
+defmodule AppWeb.WelcomeController do
+  use Phoenix.Controller
 
   def index(conn, _) do
     profile = get_session(conn, :profile)

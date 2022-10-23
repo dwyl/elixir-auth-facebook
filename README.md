@@ -2,7 +2,11 @@
 
 # `elixir-auth-facebook`
 
+Old image that was used.
 ![img](http://i.stack.imgur.com/pZzc4.png)
+
+Official logo below
+![img](https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&ccb=1-7&_nc_sid=ad8a9d&_nc_ohc=8sb1L4zz4BUAX_EvUKb&_nc_ht=scontent-cdt1-1.xx&oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&oe=6354DA64)
 
 _Easily_ add `Facebook` login to your `Elixir` / `Phoenix` Apps
 with step-by-step **_detailed_ documentation**.
@@ -37,9 +41,10 @@ By the end you will have **login with `Facebook`** in your **Web** App.
 > **Note**: if you get stuck,
 > please let us know by opening an issue!
 
-## Step 1: Create quickly a Facebook app 🆕
+## Step 1: Create a Facebook app 🆕
 
-You need to have a Facebook developer account. It is free.
+You need to have a Facebook developer account.
+It is free. You just use your Facebook account.
 You will create an app and get the **credentials** in minutes.
 
 ### Step 1.1 Create or use a developer account from your personal Facebook account
@@ -58,7 +63,7 @@ Go to <https://developers.facebook.com/apps/>
 
 ![type](priv/type.png)
 
-### Step 1.3 Get and save your credentials
+### Step 1.3 Your credentials
 
 Once you are done, you arrive to the Dasboard.
 Select **settings**, then **basic**.
@@ -103,7 +108,10 @@ It will be an external navigation to the Facebook login dialog form.
 
 ```html
 <a class="your-classes" href="{@oauth_facebook_url}">
-  <img src={Routes.static_path(@conn, "/images/fb_login.png")}/>
+  <img
+    src="src"
+    ="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64"
+  />
 </a>
 ```
 
@@ -146,7 +154,7 @@ end
 
 ### Create a `FacebookAuthController`
 
-We need a controller to respond to the endpoint:
+We finally need a controller to respond to the endpoint:
 
 ```elixir
 # defmodule MyAppWeb.FacebookController do
@@ -161,7 +169,7 @@ def login(conn, _,_) do
 end
 ```
 
-It eventually sends back on object which identifies the user. 🚀
+It eventually sends back the object below which identifies the user :eyes:
 
 ```elixir
 %{
@@ -176,43 +184,54 @@ It eventually sends back on object which identifies the user. 🚀
       "url" => "xxxxx",
       "width" => 50
     }
-  },
-  session_info: "XAAFNaUA6VI8BACO99qVYqkGPxxxxx"
+  }
 }
 ```
 
-You receive a long term "access_token" and a "session_token".
-The app can interact with the Facebook eco-system on behalf of the user.
-These tokens should be saved in the database, appended to a session.
+You receive a long term "access_token".
+The app can interact with the Facebook eco-system on behalf of the user with the token. These tokens should be saved in the database, appended to a session. If you do so, have a look at the data deletion policy at the end.
 
-> If you simply need to authenticate a user, these tokens are useless.
+> If you simply need to authenticate a user, this token is useless and everything is fine.
 
-### _Optional_:
+### Create an extra token
 
-To handle errors in the dialog server/facebook, we use a
-termination function.
-It puts flash messages and redirects to a chosen path, say "/".
+In your terminal, type `mix gen.secret 32`
 
-```elixir
-def terminate(conn, message, path) do
-    conn
-    |> Phoenix.Controller.put_flash(:error, message)
-    |> Phoenix.Controller.redirect(to: path)
-    |> Plug.Conn.halt()
-end
+This code will be called `FACEBOOK_STATE`
+Copy it into your `.env` file as below:
+
+```env
+# .env
+export FACEBOOK_APP_ID=1234...
+export FACEBOOK_APP_SECRET=A1B2C3...
+export FACEBOOK_STATE= <--- this new code
 ```
 
-You want overwrite it, if you don't want to render flash for example.
-Define a custom termination function, say `happy_end/3` in the format like above.
-Then, pass it as a third optional argument to the callback:
+Done! :rocket:
 
-```elixir
-{:ok, profile} =
-    ElixirAuthFacebook.handle_callback(
-        conn,
-        params,
-        &happy_end/3
-    )
+### A note on SSL certificate :lock:
+
+**TL;DR**: if you use this module, you don't need a reverse-proxy in DEV mode.
+
+However, if the user denies the login in this mode, then the app stops since it wants to reach an HTTPS endpoint. This is the only limitation.
+
+But if you want to use the SDK, then you need it :hushed:
+
+The SDK wants HTTPS, so you need to **reverse-proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the web and your app that intercepts the traffic and forwards the traffic back to the app. A reverse-proxy can present an SSL certificate to enable the HTTPS protocole.
+With this, your app can be reached at https://localhost.
+Of course, your app is still running as normal behind, on http://localhost:4000. These modes are differentiated by the port.
+
+#### How HTTPS :fearful: ?
+
+It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**.
+Install it in minutes, create a file named `CaddyFile` at the root, paste the code below, and type `caddy run` in a different terminal, and that's it :tada:
+
+```
+localhost:443 {
+	handle {
+		reverse_proxy 127.0.0.1:4000
+	}
+}
 ```
 
 ### Notes 📝
