@@ -208,8 +208,8 @@ The app can interact with the Facebook ecosystem on behalf of the user with the 
 ### Create a `state` token
 
 This is a secret token you need to generate as a "anti-CSRF" protection.
-In your terminal, type `mix gen.secret 32` to generate a token.
-Save it as `FACEBOOK_STATE` in your `.env` file as below:
+Type `mix gen.secret 32` In your terminal to generate a token.
+Append it to the `FACEBOOK_STATE` key in your `.env` file
 
 ```env
 # .env
@@ -228,14 +228,14 @@ However, if the user denies the login in this mode, then the app stops since it 
 
 But if you want to use the SDK, then you need it :hushed:
 
-The SDK wants HTTPS, so you need to **reverse proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the web and your app that intercepts the traffic and forwards the traffic back to the app. A reverse-proxy can present an SSL certificate to enable the HTTPS protocol.
+The SDK wants HTTPS, so you need to **reverse proxy** your app (_and also enable the JSSDK in Facebook's app settings_). This means you have a piece of software between the internet and your app that intercepts the traffic and forwards it back to the app. A reverse proxy can present an SSL certificate to enable the HTTPS protocol.
 With this, your app can be reached at https://localhost.
 Of course, your app is still running as normal behind, on http://localhost:4000. The port differentiates these modes.
 
 #### How HTTPS :fearful: ?
 
 It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**.
-Install it in minutes, create a file named `CaddyFile` at the root, paste the code below, and type `caddy run` in a different terminal, and that's it :tada:
+Install it in minutes, create a file named `CaddyFile` at the root, paste the code below in it, and type `caddy run` in a different terminal. That's it :tada:
 
 ```
 localhost:443 {
@@ -250,7 +250,9 @@ localhost:443 {
 All the flow to build the Login flow can be found here:
 <https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow>
 
-#### Meta / Privacy Concerns? 🔐
+### Meta
+
+#### Privacy Concerns? 🔐
 
 No cookie is set. It just provides user authentication.
 
@@ -259,7 +261,7 @@ Use this package as a last resort if you have no other option!
 
 #### Data deletion?
 
-If you want to use the package to access Metas' eco-system, then you need to provide [a data deletion option](https://developers.facebook.com/docs/facebook-login/overview)
+If you want to use the package to access Metas' ecosystem, then you need to provide [a data deletion option](https://developers.facebook.com/docs/facebook-login/overview)
 
 ❗️ To be compliant with GDPR guidelines, you must provide the following:
 
