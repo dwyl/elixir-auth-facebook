@@ -7,16 +7,31 @@ defmodule ElixirAuthFacebookTest do
 
   @url_exchange "https://graph.facebook.com/v15.0/oauth/access_token?client_id=1234&client_secret=ABCD&code=code&redirect_uri=#{@cb_url}&state=1234"
 
+  test "raising on missing env" do
+    env_app_id = System.get_env("FACEBOOK_APP_ID")
+    env_app_secret = System.get_env("FACEBOOK_APP_SECRET")
+    env_app_state = System.get_env("FACEBOOK_STATE")
+
+    if env_app_id == nil,
+      do: assert_raise(RuntimeError, "App ID missing", fn -> raise "App ID missing" end)
+
+    if env_app_secret == nil,
+      do: assert_raise(RuntimeError, "App secret missing", fn -> raise "App secret missing" end)
+
+    if env_app_state == nil,
+      do: assert_raise(RuntimeError, "App state missing", fn -> raise "App state missing" end)
+  end
+
   test "credentials & config" do
     env_app_id = System.get_env("FACEBOOK_APP_ID")
-    config_app_id = Application.get_env(:elixir_auth_facebook, :app_id)
+    config_app_id = Application.get_env(:app, :app_id)
+
+    env_app_secret = System.get_env("FACEBOOK_APP_SECRET")
+    config_app_secret = Application.get_env(:app, :app_secret)
 
     assert env_app_id == config_app_id
     assert env_app_id == ElixirAuthFacebook.app_id()
     assert ElixirAuthFacebook.app_id() == env_app_id
-
-    env_app_secret = System.get_env("FACEBOOK_APP_SECRET")
-    config_app_secret = Application.get_env(:elixir_auth_facebook, :app_secret)
 
     assert env_app_secret == config_app_secret
     assert env_app_secret == ElixirAuthFacebook.app_secret()
@@ -69,9 +84,14 @@ defmodule ElixirAuthFacebookTest do
   end
 
   test "state" do
-    state = System.get_env("FACEBOOK_STATE")
-    assert ElixirAuthFacebook.get_state() == state
-    assert ElixirAuthFacebook.check_state(state) == true
+    env_app_state = System.get_env("FACEBOOK_STATE")
+
+    config_app_state = Application.get_env(:app, :app_state)
+
+    assert env_app_state == config_app_state
+
+    assert ElixirAuthFacebook.get_state() == env_app_state
+    assert ElixirAuthFacebook.check_state(env_app_state) == true
 
     state = "123"
     assert ElixirAuthFacebook.check_state(state) == false
