@@ -263,9 +263,7 @@ This solution is preferable when running a free app as you consume less server C
 All the flow to build the Login flow can be found here:
 <https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow>
 
-### Meta
-
-#### Privacy Concerns? 🔐
+#### Meta - Privacy Concerns? 🔐
 
 No cookie is set. It just provides user authentication.
 
@@ -273,7 +271,7 @@ You have the tokens to do more,❗️ but do you want an [opinion(?)](https://ar
 
 Use this package as a last resort if you have no other option!
 
-#### Data deletion?
+#### Meta - Data deletion?
 
 If you want to use the package to access Metas' ecosystem, then you need to provide [a data deletion option](https://developers.facebook.com/docs/facebook-login/overview)
 
