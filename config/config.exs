@@ -6,4 +6,4 @@ import_config "#{config_env()}.exs"
 config :app,
   app_id: System.get_env("FACEBOOK_APP_ID"),
   app_secret: System.get_env("FACEBOOK_APP_SECRET"),
-  app_state: System.get_env("FACEBOOK_STATE"),
+  app_state: System.get_env("FACEBOOK_STATE")

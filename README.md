@@ -149,7 +149,7 @@ Add this line to set the redirection in the router.
 ```elixir
 #AppWeb.Router
 
-scope "/", MyAppWeb do
+scope "/", AppWeb do
   pipe_through :browser
   get "/auth/facebook/callback",
     FacebookAuthController, :login
@@ -179,7 +179,7 @@ end
 ```
 
 Facebook will send the user's credentials to the endpoint you created, and the controller/callback will receive them in the `params`.
-We use again the `ElixirAuthFacebook` to handle these "params" and deliver the user's identity.
+We use again the `ElixirAuthFacebook` module to handle these "params" and deliver the user's identity.
 
 It eventually sends back the object below which identifies the user :eyes:
 
@@ -201,14 +201,16 @@ It eventually sends back the object below which identifies the user :eyes:
 ```
 
 A long-term "access_token" is delivered.
-The app can interact with the Facebook ecosystem on behalf of the user with the token. These tokens should be saved in the database and appended to a session. If you intend to do so, have a look at the data deletion policy at the end.
+The app can interact with the Facebook ecosystem on behalf of the user with this token. These tokens should be saved in the database and appended to a session. If you intend to do so, have a look at the data deletion policy at the end.
 
 > If you simply need to authenticate a user, this token is useless and everything is fine.
 
 ### Create a `state` token
 
-This is a secret token you need to generate as a "anti-CSRF" protection.
-Type `mix gen.secret 32` In your terminal to generate a token.
+Last step! You need to generate an "anti-CSRF" protection token.
+
+Type `mix gen.secret 32` in your terminal to generate one.
+
 Append it to the `FACEBOOK_STATE` key in your `.env` file
 
 ```env

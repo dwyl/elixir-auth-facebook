@@ -25,7 +25,8 @@ defmodule ElixirAuthFacebook do
   # ------ APIs ----------------
 
   @doc """
-  Generates the url that opens Login dialog.
+  Generates the url that opens Login dialogue.
+  Needs the APP_ID and the STATE.
 
   ## Example
   iex> oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
@@ -35,7 +36,7 @@ defmodule ElixirAuthFacebook do
   def generate_oauth_url(conn), do: @fb_dialog_oauth <> params_1(conn)
 
   @doc """
-  The callback after receiving Facebook's response.
+  The callback triggered after receiving Facebook's response.
   """
 
   # user denies dialog
