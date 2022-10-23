@@ -102,6 +102,7 @@ You want to display a **login** link on one of your pages.
 ### Create a `state` token
 
 You need to generate an "anti-CSRF" protection token.
+
 Type `mix gen.secret 32` in your terminal to generate one.
 Append it to the `FACEBOOK_STATE` key in your `.env` file.
 Finally run `source .env`.
@@ -134,6 +135,7 @@ Add the Facebook Login link to the template:
 The `href` value is `@oauth_facebook_url`.
 This is an "assign", a key/value map passed to the `conn` struct.
 It is set by using the module `ElixirAuthFacebook`.
+
 In the controller that renders the template above, add the code below:
 
 ```elixir
@@ -158,6 +160,7 @@ end
 ### Create the `/auth/facebook/callback` endpoint 📍
 
 Once the user has filled out the dialogue form, he will be redirected to your app.
+
 Add this line to set the redirection in the router.
 
 ```elixir
@@ -230,6 +233,7 @@ The app can interact with the Facebook ecosystem on behalf of the user with this
 #### How-to HTTPS :fearful: locally?
 
 It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**. It supports automatic HTTPS by provisioning and renewing certificates through [Let’s Encrypt](https://letsencrypt.org/).
+
 Install it in minutes, create a file named `CaddyFile` at the root, paste the code below in it, and type `caddy run` in a different terminal. That's it :tada:
 
 ```
