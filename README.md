@@ -103,7 +103,7 @@ You want to display a **login** link on one of your pages.
 
 You need to generate an "anti-CSRF" protection token.
 Type `mix gen.secret 32` in your terminal to generate one.
-Append it to the `FACEBOOK_STATE` key in your `.env` file
+Append it to the `FACEBOOK_STATE` key in your `.env` file.
 Finally run `source .env`.
 
 ```env
@@ -115,9 +115,9 @@ export FACEBOOK_STATE= <--- this new token
 
 ### Add a login link in your template ✨
 
-Suppose you have a template "page/index/html" rendered by a controller "PageController".
+Suppose you have a template "page/index.html" rendered by the controller "PageController".
 
-Add the Facebook Login link in the HTML:
+Add the Facebook Login link to the template:
 
 ```html.heex
 # /lib/app_web/templates/page/index.html.heex
@@ -245,12 +245,14 @@ It is a piece of software between the internet and your app that intercepts the 
 Once it is running, your app can be reached at <https://localhost>.
 Of course, your app is still running as normal behind, on <http://localhost:4000>. The port differentiates these modes.
 
-### SDK?
+### SDK :thought_balloon: ?
 
 The [Facebook SDK](https://developers.facebook.com/docs/javascript/quickstart) is the alternative _authentication from the browser_.
 You **need** to reverse proxy your app (_and also enable the JSSDK in Facebook's app settings_). With Caddyserver, this is made easy for your dev mode.
 
 The SDK usage is demonstrated in the companion repo: **<TODO: elixir_auth_facebook_demo>**.
+
+This solution is preferable when running a free app as you consume less server CPU.
 
 ### Notes 📝
 
