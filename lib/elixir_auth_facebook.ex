@@ -20,7 +20,7 @@ defmodule ElixirAuthFacebook do
   @fb_access_token "https://graph.facebook.com/v15.0/oauth/access_token?"
   @fb_profile "https://graph.facebook.com/v15.0/me?fields=id,email,name,picture"
 
-  # @httpoison if System.get_env("MIX_ENV") == "test", do: App.HTTPoisonMock, else: HTTPoison
+  @httpoison (Application.compile_env!(:app, :mode) == "test" && HTTPoisonMock) || HTTPoison
 
   # ------ APIs ----------------
 
@@ -85,10 +85,10 @@ defmodule ElixirAuthFacebook do
   def get_profile({:error, message}), do: {:error, {:get_profile, message}}
 
   def get_profile(%Plug.Conn{assigns: %{is_valid: nil}}) do
-    {:error, {:get_profile, "renew your credentials"}}
+    {:error, {:get_profile2, "renew your credentials"}}
   end
 
-  def get_profile(%Plug.Conn{assigns: %{access_token: token, is_valid: true}} = conn) do
+  def get_profile(%Plug.Conn{assigns: %{access_token: token}} = conn) do
     URI.encode_query(%{"access_token" => token})
     |> graph_api()
     |> decode_response()
@@ -98,10 +98,6 @@ defmodule ElixirAuthFacebook do
   end
 
   def check_profile({:error, message}), do: {:error, {:check_profile, message}}
-
-  def check_profile(%Plug.Conn{assigns: %{data: %{"error" => %{"message" => message}}}}) do
-    {:error, {:check_profile, message}}
-  end
 
   def check_profile(%Plug.Conn{
         assigns: %{access_token: token, profile: profile}
@@ -145,9 +141,7 @@ defmodule ElixirAuthFacebook do
 
   # ---------- Definition of the URLs ---------
   def get_baseurl_from_conn(%{host: h, port: p}) when h == "localhost" do
-    if p != 4000,
-      do: "https://localhost",
-      else: "http://#{h}:#{p}"
+    (p != 4000 && "https://localhost") || "http://#{h}:#{p}"
   end
 
   def get_baseurl_from_conn(%{host: h}), do: "https://#{h}"
@@ -168,10 +162,11 @@ defmodule ElixirAuthFacebook do
 
   # ------ Private Helpers -------------------
 
+  def inject(), do: @httpoison
   # utility function: receives an URL and provides the response body
   def decode_response(url) do
     url
-    |> HTTPoison.get!()
+    |> inject().get!()
     |> Map.get(:body)
     |> Jason.decode!()
   end

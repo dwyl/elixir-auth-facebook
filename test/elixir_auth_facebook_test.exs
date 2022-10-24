@@ -1,11 +1,10 @@
 defmodule ElixirAuthFacebookTest do
   use ExUnit.Case, async: true
 
-  @cb_url if System.get_env("FACEBOOK_HTTPS") == "false",
-            do: "http%3A%2F%2Flocalhost%3A4000%2Fauth%2Ffacebook%2Fcallback",
-            else: "https%3A%2F%2Flocalhost%2Fauth%2Ffacebook%2Fcallback"
+  # cb_url = "http%3A%2F%2Flocalhost%3A4000%2Fauth%2Ffacebook%2Fcallback"
 
-  @url_exchange "https://graph.facebook.com/v15.0/oauth/access_token?client_id=1234&client_secret=ABCD&code=code&redirect_uri=#{@cb_url}&state=1234"
+  # url_exchange =
+  #   "https://graph.facebook.com/v15.0/oauth/access_token?client_id=1234&client_secret=ABCD&code=code&redirect_uri=#{cb_url}&state=1234"
 
   test "raising on missing env" do
     env_app_id = System.get_env("FACEBOOK_APP_ID")
@@ -31,11 +30,9 @@ defmodule ElixirAuthFacebookTest do
 
     assert env_app_id == config_app_id
     assert env_app_id == ElixirAuthFacebook.app_id()
-    assert ElixirAuthFacebook.app_id() == env_app_id
 
     assert env_app_secret == config_app_secret
     assert env_app_secret == ElixirAuthFacebook.app_secret()
-    assert ElixirAuthFacebook.app_secret() == env_app_secret
 
     app_access_token = env_app_id <> "|" <> env_app_secret
 
@@ -97,11 +94,10 @@ defmodule ElixirAuthFacebookTest do
     assert ElixirAuthFacebook.check_state(state) == false
   end
 
-  test "build params" do
-    conn = %Plug.Conn{scheme: :https, host: "dwyl.com"}
-
-    expected =
-      "client_id=1234&redirect_uri=https%3A%2F%2Fdwyl.com%2Fauth%2Ffacebook%2Fcallback&scope=public_profile&state=1234"
+  test "build params HTTPS" do
+    conn = %Plug.Conn{host: "dwyl.com"}
+    url = "https%3A%2F%2Fdwyl.com%2Fauth%2Ffacebook%2Fcallback"
+    expected = "client_id=1234&redirect_uri=#{url}&scope=public_profile&state=1234"
 
     assert ElixirAuthFacebook.params_1(conn) == expected
 
@@ -109,8 +105,23 @@ defmodule ElixirAuthFacebookTest do
 
     assert ElixirAuthFacebook.params_3("aze") == expected
 
-    expected =
-      "client_id=1234&client_secret=ABCD&code=code&redirect_uri=https%3A%2F%2Fdwyl.com%2Fauth%2Ffacebook%2Fcallback&state=1234"
+    expected = "client_id=1234&client_secret=ABCD&code=code&redirect_uri=#{url}&state=1234"
+
+    assert ElixirAuthFacebook.params_2("code", conn) == expected
+  end
+
+  test "build params HTTP" do
+    conn = %Plug.Conn{host: "localhost", port: 4000}
+    url = "http%3A%2F%2Flocalhost%3A4000%2Fauth%2Ffacebook%2Fcallback"
+    expected = "client_id=1234&redirect_uri=#{url}&scope=public_profile&state=1234"
+
+    assert ElixirAuthFacebook.params_1(conn) == expected
+
+    expected = "access_token=1234%7CABCD&input_token=aze"
+
+    assert ElixirAuthFacebook.params_3("aze") == expected
+
+    expected = "client_id=1234&client_secret=ABCD&code=code&redirect_uri=#{url}&state=1234"
 
     assert ElixirAuthFacebook.params_2("code", conn) == expected
   end
@@ -137,40 +148,56 @@ defmodule ElixirAuthFacebookTest do
   end
 
   test "captures errors" do
-    conn = %Plug.Conn{assigns: %{access_token: "AT", is_valid: true}}
-
-    assert ElixirAuthFacebook.get_profile(conn).assigns.profile["error"]["message"] ==
-             "Invalid OAuth access token - Cannot parse access token"
-
-    conn = %Plug.Conn{assigns: %{data: %{"access_token" => "AT"}}}
-
-    assert ElixirAuthFacebook.get_data(conn).assigns.data["is_valid"] == nil
-
-    conn = %Plug.Conn{assigns: %{data: %{"error" => %{"message" => "test"}}}}
     assert ElixirAuthFacebook.get_data({:error, "test"}) == {:error, {:get_data, "test"}}
-    assert ElixirAuthFacebook.get_data(conn) == {:error, {:get_data, "test"}}
-
-    assert ElixirAuthFacebook.check_profile({:error, "test"}) ==
-             {:error, {:check_profile, "test"}}
-
-    assert ElixirAuthFacebook.check_profile(conn) == {:error, {:check_profile, "test"}}
 
     assert ElixirAuthFacebook.get_profile({:error, "test"}) ==
              {:error, {:get_profile, "test"}}
 
-    conn = %Plug.Conn{assigns: %{is_valid: nil}}
-
-    assert ElixirAuthFacebook.get_profile(conn) ==
-             {:error, {:get_profile, "renew your credentials"}}
+    assert ElixirAuthFacebook.check_profile({:error, "test"}) ==
+             {:error, {:check_profile, "test"}}
   end
 
-  test "decode_reponse" do
-    url = "https://jsonplaceholder.typicode.com/todos/1"
-    assert ElixirAuthFacebook.decode_response(url)["id"] == 1
+  # wrong app_id: {:check_profile, {:get_profile, {:get_data, "Error validating application. Cannot get application info due to a system error."}}}
+  # wrong app_secret: {:check_profile, {:get_profile, {:get_data, "Error validating client secret."}}}
+
+  test "errors" do
+    conn = %Plug.Conn{host: "localhost", port: 4000, assigns: %{data: %{"access_token" => "A"}}}
+
+    assert ElixirAuthFacebook.get_data(conn) |> ElixirAuthFacebook.get_profile() ==
+             {:error, {:get_profile2, "renew your credentials"}}
+
+    conn = %Plug.Conn{assigns: %{data: %{"error" => %{"message" => "test"}}}}
+    assert ElixirAuthFacebook.get_data(conn) == {:error, {:get_data, "test"}}
+  end
+
+  test "handle user positive" do
+    assert ElixirAuthFacebook.handle_callback(%Plug.Conn{host: "localhost", port: 4000}, %{
+             "state" => "1234",
+             "code" => "code"
+           }) ==
+             {:ok,
+              %{
+                access_token: "AT",
+                email: "harry@potter.com",
+                fb_id: "10228683763268904",
+                is_valid: true,
+                name: "Harry Potter",
+                picture: %{
+                  height: "50",
+                  is_silhouette: "false",
+                  url: "www.dwyl.com",
+                  width: "50"
+                }
+              }}
   end
 
   test "handle user deny dialog" do
     assert ElixirAuthFacebook.handle_callback(%Plug.Conn{}, %{"error" => "ok"}) ==
              {:error, {:access, "ok"}}
+  end
+
+  test "handle error state" do
+    assert ElixirAuthFacebook.handle_callback(%Plug.Conn{}, %{"state" => "123", "code" => "code"}) ==
+             {:error, {:state, "Error with the state"}}
   end
 end
