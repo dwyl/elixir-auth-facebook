@@ -1,15 +1,16 @@
 defmodule ElixirAuthFacebook do
   import Plug.Conn
+  alias ElixirAuthFacebook.HTTPoisonMock
 
   @moduledoc """
   This module exposes two functions to enable Facebook Login
   from the server:
 
-  - "generate_oauth_url" : takes the conn from the controller
+  - generate_oauth_url/1 takes the conn from the controller
   (to get the domain) and returns an URL with a query string.
-  We reach Facebook with this URL.
+  We reach the Facebook dialogue form with this URL.
 
-  - "handle_callback": the callback of the endpoint that receives
+  - handle_callback/2 is the callback of the endpoint that receives
   Facebook's response
   """
 
@@ -20,23 +21,44 @@ defmodule ElixirAuthFacebook do
   @fb_access_token "https://graph.facebook.com/v15.0/oauth/access_token?"
   @fb_profile "https://graph.facebook.com/v15.0/me?fields=id,email,name,picture"
 
-  @httpoison (Application.compile_env!(:app, :mode) == "test" && HTTPoisonMock) || HTTPoison
-
   # ------ APIs ----------------
 
   @doc """
-  Generates the url that opens Login dialogue.
-  Needs the APP_ID and the STATE.
+  Generates the URL to navigate to the Facebook Login dialogue.
+
+  This URL is passed into the assigns for the template.
 
   ## Example
-  iex> oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
-
-  render(conn, "index.html", oauth_facebook_url: oauth_facebook_url
+    ```elixir
+    oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
+    render(conn, "index.html", oauth_facebook_url: oauth_facebook_url
+    ```
   """
   def generate_oauth_url(conn), do: @fb_dialog_oauth <> params_1(conn)
 
   @doc """
-  The callback triggered after receiving Facebook's response.
+    The callback triggered after receiving Facebook's response.
+    You create a "GET /auth/facebook/callback" endpoint and
+    a controller where you implement `handle_callback(conn, params)`
+
+    It receives Facebook's payload in the params and delivers
+    a tuple `{:ok, profile}`.
+    ```elixir
+    profile = %{
+      access_token: "EAAFNaUA6VI8BAPkCCVV6q0U0tf7...",
+      email: "xxxxx",
+      fb_id: "10223726006128074",
+      name: "Harry Potter",
+      picture: %{
+        "data" => %{
+          "height" => 50,
+          "is_silhouette" => false,
+          "url" => "xxxxx",
+          "width" => 50
+        }
+      }
+    }
+    ```
   """
 
   # user denies dialog
@@ -44,6 +66,7 @@ defmodule ElixirAuthFacebook do
     {:error, {:access, message}}
   end
 
+  # first call: gets the access_token from the received "code" and app credentials
   def handle_callback(conn, %{"state" => state, "code" => code}) do
     case check_state(state) do
       false ->
@@ -63,6 +86,9 @@ defmodule ElixirAuthFacebook do
     end
   end
 
+  # _______ private functions ______________________________________
+
+  # second call: from access_token to user_id
   def get_data({:error, message}), do: {:error, {:get_data, message}}
 
   def get_data(%Plug.Conn{assigns: %{data: %{"error" => %{"message" => message}}}}) do
@@ -82,6 +108,7 @@ defmodule ElixirAuthFacebook do
     end)
   end
 
+  # third call: from user_id to user_profile
   def get_profile({:error, message}), do: {:error, {:get_profile, message}}
 
   def get_profile(%Plug.Conn{assigns: %{is_valid: nil}}) do
@@ -97,6 +124,7 @@ defmodule ElixirAuthFacebook do
     end)
   end
 
+  # cleaning the received user's profile
   def check_profile({:error, message}), do: {:error, {:check_profile, message}}
 
   def check_profile(%Plug.Conn{
@@ -111,8 +139,8 @@ defmodule ElixirAuthFacebook do
     {:ok, profile}
   end
 
-  # ------ Definition of App Credentials
-  def app_id() do
+  # ------ Retrieve App Credentials from ENV or CONFIG ir RAISE -----
+  def app_id do
     System.get_env("FACEBOOK_APP_ID") ||
       Application.get_env(:elixir_auth_facebook, :app_id) ||
       raise("""
@@ -120,7 +148,7 @@ defmodule ElixirAuthFacebook do
       """)
   end
 
-  def app_secret() do
+  def app_secret do
     System.get_env("FACEBOOK_APP_SECRET") ||
       Application.get_env(:elixir_auth_facebook, :app_secret) ||
       raise """
@@ -128,10 +156,10 @@ defmodule ElixirAuthFacebook do
       """
   end
 
-  def app_access_token(), do: app_id() <> "|" <> app_secret()
+  def app_access_token, do: app_id() <> "|" <> app_secret()
 
   # anti-CSRF
-  def get_state() do
+  def get_state do
     System.get_env("FACEBOOK_STATE") ||
       Application.get_env(:elixir_auth_facebook, :app_state) ||
       raise """
@@ -161,22 +189,25 @@ defmodule ElixirAuthFacebook do
   def graph_api(access), do: @fb_profile <> "&" <> access
 
   # ------ Private Helpers -------------------
-
-  def inject(), do: @httpoison
-  # utility function: receives an URL and provides the response body
+  # Utility function: receives an URL and provides the response body
+  # when testing, it uses a mock version of the HTTP call, otherwise the original version
   def decode_response(url) do
+    inject =
+      (Application.get_env(:elixir_auth_facebook, :mode) == :test && HTTPoisonMock) ||
+        HTTPoison
+
     url
-    |> inject().get!()
+    |> inject.get!()
     |> Map.get(:body)
     |> Jason.decode!()
   end
 
-  # format the profile map with atom keys
+  # utility to format the profile map with atom keys
   def into_atoms(strings) do
     for {k, v} <- strings, into: %{}, do: {String.to_atom(k), v}
   end
 
-  # deep dive into the map
+  # utility to transform and move deeply the "string-keyed" map into an "atom-keyed" map
   def nice_map(map) do
     map
     |> into_atoms()
@@ -186,18 +217,18 @@ defmodule ElixirAuthFacebook do
     end)
   end
 
-  # Replace "id" to "fb_id" to avoid confusion in the returned data
+  # utility to replace "id" to "fb_id" to avoid confusion in the returned data
   def exchange_id(profile) do
     profile
     |> Map.put_new(:fb_id, profile.id)
     |> Map.delete(:id)
   end
 
-  # ----- Helpers on state / anti-CSRF -------------
+  # ----- State anti-CSRF check -------------
   # verify that the received state is equal to the system state
   def check_state(state), do: get_state() == state
 
-  # ----Building query strings --------------------
+  # ----Building query strings for the 3 HTTP calls -------
   def params_1(conn) do
     URI.encode_query(
       %{

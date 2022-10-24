@@ -97,22 +97,34 @@ Your app won't work if a wrong or incomplete base URL is set.
 
 ## Step 2: use the `ElixirAuthFacebook` module
 
-You want to display a **login** link on one of your pages.
+You want to display a **login** link on one of your pages. We will need the credentials and add a little bit of code.
 
 ### Create a `state` token
 
-You need to generate an "anti-CSRF" protection token.
+You need to generate an "anti-CSRF" token.
 
-Type `mix gen.secret 32` in your terminal to generate one.
-Append it to the `FACEBOOK_STATE` key in your `.env` file.
-Finally run `source .env`.
+Type `mix gen.secret 32` in your terminal.
+Append the result to the `FACEBOOK_STATE` key in your `.env` file.
+
+Run `source .env` to load them in DEV mode.
 
 ```env
 # .env
-export FACEBOOK_APP_ID=1234...
-export FACEBOOK_APP_SECRET=A1B2C3...
-export FACEBOOK_STATE= <--- this new token
+export FACEBOOK_APP_ID="1234_got_u_from_dev_fb"
+export FACEBOOK_APP_SECRET="ABCD_got_u_from_dev_fb"
+export FACEBOOK_STATE= "A1B2_got_u_from_mix_gen_secret
 ```
+
+Alternatively hardcode your secrets to your [`config/runtime.exs`] file:
+
+```elixir
+config :elixir_auth_facebook,
+  app_id: "1234_got_u_from_dev_fb",
+  app_secret: "ABCD_got_u_from_dev_fb",
+  app_state: "A1B2_got_u_from_mix_gen_secret"
+```
+
+See: <https://hexdocs.pm/phoenix/deployment.html#handling-of-your-application-secrets>
 
 ### Add a login link in your template ✨
 
@@ -232,7 +244,7 @@ The app can interact with the Facebook ecosystem on behalf of the user with this
 
 #### How-to HTTPS :fearful: locally?
 
-It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**. It supports automatic HTTPS by provisioning and renewing certificates through [Let’s Encrypt](https://letsencrypt.org/).
+It's a piece of cake with **[Caddyserver](https://caddyserver.com/docs/)**. It supports automatic HTTPS by provisioning and renewing certificates through [Let’s Encrypt](https://letsencrypt.org/) for you.
 
 Install it in minutes, create a file named `CaddyFile` at the root, paste the code below in it, and type `caddy run` in a different terminal. That's it :tada:
 
@@ -244,8 +256,8 @@ localhost:443 {
 }
 ```
 
-A reverse proxy can enable the HTTPS protocol with an SSL certificate authority.
-It is a piece of software between the internet and your app that intercepts the traffic and forwards it back to the app.
+A reverse proxy is a piece of software between the internet and your app. It intercepts the traffic and forwards it back to the app.
+
 Once it is running, your app can be reached at <https://localhost>.
 Of course, your app is still running as normal behind, on <http://localhost:4000>. The port differentiates these modes.
 
