@@ -1,5 +1,5 @@
 defmodule AppWeb.WelcomeController do
-  use Phoenix.Controller
+  use AppWeb, :controller
 
   def index(conn, _) do
     profile = get_session(conn, :profile)

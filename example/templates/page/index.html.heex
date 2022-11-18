@@ -1,10 +1,10 @@
 <section class="phx-hero">
     <p>To get started, login to your favorite Account:</p>
-    
+
 <%!-- ********************* SSR FACEBOOK BUTTON ************************ --%>
     <a class="" href={@oauth_facebook_url}>
-        <img 
-        src="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&ccb=1-7&_nc_sid=ad8a9d&_nc_ohc=8sb1L4zz4BUAX_EvUKb&_nc_ht=scontent-cdt1-1.xx&oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&oe=6354DA64" 
+        <img
+        src={Routes.static_path(@conn, "/images/fb_login.webp")}
         />
     </a>
 </section>

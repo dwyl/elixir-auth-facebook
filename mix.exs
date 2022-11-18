@@ -19,7 +19,11 @@ defmodule ElixirAuthFacebook.MixProject do
         "coveralls.json": :test,
         "coveralls.html": :test,
         t: :test
-      ]
+      ],
+      # Docs
+      name: "elixir_auth_facebook",
+      source_url: "https://github.com/dwyl/elixir_auth_facebook",
+      docs: [extras: ["README.md"]]
     ]
   end
 

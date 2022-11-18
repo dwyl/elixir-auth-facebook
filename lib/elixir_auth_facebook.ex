@@ -30,19 +30,28 @@ defmodule ElixirAuthFacebook do
 
   ## Example
     ```elixir
-    oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
-    render(conn, "index.html", oauth_facebook_url: oauth_facebook_url
+    #page_controller.ex
+    def index(conn, _params) do
+      oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
+
+      conn
+      |> render("index.html", oauth_facebook_url: oauth_facebook_url)
+    end
     ```
   """
   def generate_oauth_url(conn), do: @fb_dialog_oauth <> params_1(conn)
 
   @doc """
-    The callback triggered after receiving Facebook's response.
-    You create a "GET /auth/facebook/callback" endpoint and
-    a controller where you implement `handle_callback(conn, params)`
+  The callback triggered after receiving Facebook's response.
 
-    It receives Facebook's payload in the params and delivers
-    a tuple `{:ok, profile}`.
+  You create a "GET /auth/facebook/callback" endpoint and
+  a controller where you implement `handle_callback(conn, params)`
+
+  It receives Facebook's payload in the params.
+  It delivers a tuple `{:ok, profile}`
+
+  ## Example
+
     ```elixir
     profile = %{
       access_token: "EAAFNaUA6VI8BAPkCCVV6q0U0tf7...",
@@ -58,6 +67,20 @@ defmodule ElixirAuthFacebook do
         }
       }
     }
+    ```
+
+    ```elixir
+    #router.ex
+    get "/auth/facebook/callback", ElixirAuthFacebookController, :logi
+
+    #elixir_auth_facebook_controller.ex
+    def login(conn, params) do
+      with {:ok, profile} <- ElixirAuthFacebook.handle_callback(conn, params) do
+        conn
+        |> put_session(:profile, profile)
+        |> render("index.html", oauth_facebook_url: oauth_facebook_url)
+      end
+    end
     ```
   """
 
@@ -89,6 +112,7 @@ defmodule ElixirAuthFacebook do
   # _______ private functions ______________________________________
 
   # second call: from access_token to user_id
+  @doc false
   def get_data({:error, message}), do: {:error, {:get_data, message}}
 
   def get_data(%Plug.Conn{assigns: %{data: %{"error" => %{"message" => message}}}}) do
@@ -109,6 +133,7 @@ defmodule ElixirAuthFacebook do
   end
 
   # third call: from user_id to user_profile
+  @doc false
   def get_profile({:error, message}), do: {:error, {:get_profile, message}}
 
   def get_profile(%Plug.Conn{assigns: %{is_valid: nil}}) do
@@ -125,6 +150,7 @@ defmodule ElixirAuthFacebook do
   end
 
   # cleaning the received user's profile
+  @doc false
   def check_profile({:error, message}), do: {:error, {:check_profile, message}}
 
   def check_profile(%Plug.Conn{
@@ -140,6 +166,8 @@ defmodule ElixirAuthFacebook do
   end
 
   # ------ Retrieve App Credentials from ENV or CONFIG ir RAISE -----
+  # Fetch env var FACEBOOK_APP_ID
+  @doc false
   def app_id do
     System.get_env("FACEBOOK_APP_ID") ||
       Application.get_env(:elixir_auth_facebook, :app_id)
@@ -148,6 +176,9 @@ defmodule ElixirAuthFacebook do
     # App ID missing
     # """)
   end
+
+  @doc false
+  # Fetch env var FACEBOOK_APP_SECRET
 
   def app_secret do
     System.get_env("FACEBOOK_APP_SECRET") ||
@@ -158,9 +189,12 @@ defmodule ElixirAuthFacebook do
     # """
   end
 
+  @doc false
   def app_access_token, do: app_id() <> "|" <> app_secret()
 
-  # anti-CSRF
+  @doc false
+  # Fetch env var FACEBOOK_STATE, anti-CSRF
+
   def get_state do
     System.get_env("FACEBOOK_STATE") ||
       Application.get_env(:elixir_auth_facebook, :app_state)
@@ -171,29 +205,35 @@ defmodule ElixirAuthFacebook do
   end
 
   # ---------- Definition of the URLs ---------
+  @doc false
   def get_baseurl_from_conn(%{host: h, port: p}) when h == "localhost" do
     (p != 4000 && "https://localhost") || "http://#{h}:#{p}"
   end
 
   def get_baseurl_from_conn(%{host: h}), do: "https://#{h}"
 
+  @doc false
   # derives the URL from the "conn" struct and the input
   def generate_redirect_url(conn) do
     get_baseurl_from_conn(conn) <> @default_callback_path
   end
 
+  @doc false
   # Generates the url for the exchange "code" to "access_token".
   def access_token_uri(code, conn), do: @fb_access_token <> params_2(code, conn)
 
+  @doc false
   # Generates the url for Access Token inspection.
   def debug_token_uri(token), do: @fb_debug <> params_3(token)
 
+  @doc false
   # Generates the Graph API url to query for users data.
   def graph_api(access), do: @fb_profile <> "&" <> access
 
   # ------ Private Helpers -------------------
   # Utility function: receives an URL and provides the response body
   # when testing, it uses a mock version of the HTTP call, otherwise the original version
+  @doc false
   def decode_response(url) do
     inject =
       (Application.get_env(:elixir_auth_facebook, :mode) == :test && HTTPoisonMock) ||
@@ -205,11 +245,13 @@ defmodule ElixirAuthFacebook do
     |> Jason.decode!()
   end
 
+  @doc false
   # utility to format the profile map with atom keys
   def into_atoms(strings) do
     for {k, v} <- strings, into: %{}, do: {String.to_atom(k), v}
   end
 
+  @doc false
   # utility to transform and move deeply the "string-keyed" map into an "atom-keyed" map
   def nice_map(map) do
     map
@@ -220,6 +262,7 @@ defmodule ElixirAuthFacebook do
     end)
   end
 
+  @doc false
   # utility to replace "id" to "fb_id" to avoid confusion in the returned data
   def exchange_id(profile) do
     profile
@@ -228,9 +271,11 @@ defmodule ElixirAuthFacebook do
   end
 
   # ----- State anti-CSRF check -------------
+  @doc false
   # verify that the received state is equal to the system state
   def check_state(state), do: get_state() == state
 
+  @doc false
   # ----Building query strings for the 3 HTTP calls -------
   def params_1(conn) do
     URI.encode_query(
@@ -244,6 +289,7 @@ defmodule ElixirAuthFacebook do
     )
   end
 
+  @doc false
   def params_2(code, conn) do
     URI.encode_query(
       %{
@@ -257,6 +303,7 @@ defmodule ElixirAuthFacebook do
     )
   end
 
+  @doc false
   def params_3(token) do
     URI.encode_query(
       %{

@@ -1,5 +1,5 @@
 defmodule AppWeb.PageController do
-  use Phoenix.Controller
+  use AppWeb, :controller
 
   def index(conn, _params) do
     oauth_facebook_url = ElixirAuthFacebook.generate_oauth_url(conn)
