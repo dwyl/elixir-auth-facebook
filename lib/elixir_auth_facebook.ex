@@ -142,18 +142,20 @@ defmodule ElixirAuthFacebook do
   # ------ Retrieve App Credentials from ENV or CONFIG ir RAISE -----
   def app_id do
     System.get_env("FACEBOOK_APP_ID") ||
-      Application.get_env(:elixir_auth_facebook, :app_id) ||
-      raise("""
-      App ID missing
-      """)
+      Application.get_env(:elixir_auth_facebook, :app_id)
+
+    # || raise("""
+    # App ID missing
+    # """)
   end
 
   def app_secret do
     System.get_env("FACEBOOK_APP_SECRET") ||
-      Application.get_env(:elixir_auth_facebook, :app_secret) ||
-      raise """
-      App secret missing
-      """
+      Application.get_env(:elixir_auth_facebook, :app_secret)
+
+    # || raise """
+    # App Secret missing
+    # """
   end
 
   def app_access_token, do: app_id() <> "|" <> app_secret()
@@ -161,10 +163,11 @@ defmodule ElixirAuthFacebook do
   # anti-CSRF
   def get_state do
     System.get_env("FACEBOOK_STATE") ||
-      Application.get_env(:elixir_auth_facebook, :app_state) ||
-      raise """
-      App state missing
-      """
+      Application.get_env(:elixir_auth_facebook, :app_state)
+
+    # || raise """
+    # App State missing
+    # """
   end
 
   # ---------- Definition of the URLs ---------

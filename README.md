@@ -2,7 +2,7 @@
 
 # `elixir-auth-facebook`
 
-![img](https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&ccb=1-7&_nc_sid=ad8a9d&_nc_ohc=8sb1L4zz4BUAX_EvUKb&_nc_ht=scontent-cdt1-1.xx&oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&oe=6354DA64)
+![fb-imgt](priv/fb_login.webp)
 
 </div>
 
@@ -15,8 +15,7 @@ Facebook authentication is used **_everywhere_**!
 Tens of millions of people use it every day.
 Facebook Login can be used to authenticate people without planning to access their data.
 
-We wanted to create a reusable `Elixir` package
-with beginner-friendly instructions and readable code.
+We wanted to create a reusable `Elixir` **SSR**-package with beginner-friendly instructions and readable code.
 
 ## What?
 
@@ -24,10 +23,7 @@ A simple and easy-to-use `Elixir` package that gives you
 **Facebook `OAuth` Authentication** for your **web app**
 in a few steps with minimal API.
 
-❗️ If you target Android or IOS, use the SDK.
-
-> If you're new to `Elixir`,
-> please see: [dwyl/**learn-elixir**](https://github.com/dwyl/learn-hapi)
+> If you're new to `Elixir`, please visit [dwyl/**learn-elixir**](https://github.com/dwyl/learn-hapi)
 
 ## How?
 
@@ -39,8 +35,8 @@ By the end, you will have **login with `Facebook`** in your **Web** App.
 
 ## Step 1: Create a Facebook app 🆕
 
-You need to have a Facebook developer account.
-It is free. You just use your Facebook account.
+You need to have a Facebook developer account. It is free.
+You just use your Facebook account.
 You will create an app and get the **credentials** in minutes.
 
 ### Step 1.1 Create or use a developer account from your personal Facebook account
@@ -110,18 +106,18 @@ Run `source .env` to load them in DEV mode.
 
 ```env
 # .env
-export FACEBOOK_APP_ID="1234_got_u_from_dev_fb"
-export FACEBOOK_APP_SECRET="ABCD_got_u_from_dev_fb"
-export FACEBOOK_STATE= "A1B2_got_u_from_mix_gen_secret
+export FACEBOOK_APP_ID="got_u_from_developers.facebook.com"
+export FACEBOOK_APP_SECRET="also_from_developers.facebook.com"
+export FACEBOOK_STATE= "generate_me_with_mix_gen_secret
 ```
 
 Alternatively hardcode your secrets to your [`config/runtime.exs`] file:
 
 ```elixir
 config :elixir_auth_facebook,
-  app_id: "1234_got_u_from_dev_fb",
-  app_secret: "ABCD_got_u_from_dev_fb",
-  app_state: "A1B2_got_u_from_mix_gen_secret"
+  app_id: "1234...",
+  app_secret: "ABCD...",
+  app_state: "A1B2..."
 ```
 
 See: <https://hexdocs.pm/phoenix/deployment.html#handling-of-your-application-secrets>
@@ -130,14 +126,14 @@ See: <https://hexdocs.pm/phoenix/deployment.html#handling-of-your-application-se
 
 Suppose you have a template "page/index.html" rendered by the controller "PageController".
 
-Add the Facebook Login link to the template:
+Add the Facebook Login "fb_login.webp" file into the folder "/priv/static/images/" and link it into the template:
 
 ```html.heex
 # /lib/app_web/templates/page/index.html.heex
 
 <a class="your-classes" href={@oauth_facebook_url}>
   <img
-    src="https://scontent-cdt1-1.xx.fbcdn.net/v/t39.2365-6/294967112_614766366879300_4791806768823542705_n.png?_nc_cat=105&amp;ccb=1-7&amp;_nc_sid=ad8a9d&amp;_nc_ohc=8sb1L4zz4BUAX_EvUKb&amp;_nc_ht=scontent-cdt1-1.xx&amp;oh=00_AT9npEF786Ao623QdsCGbrNq9s4R9v1xzFeX5GkOkAbT6g&amp;oe=6354DA64"
+    src={Routes.static_path(@conn, "/images/fb_login.webp")}
   />
 </a>
 ```
@@ -154,7 +150,7 @@ In the controller that renders the template above, add the code below:
 # lib/app_web/controllers/page_controller.ex
 
 defmodule AppWeb.PageController do
-  use Phoenix.Controller
+  use AppWeb, :controller
 
   def index(conn, _p) do
     oauth_facebook_url =
@@ -193,7 +189,7 @@ Last step! We finally need a controller to respond to the endpoint:
 # lib/app_web/controllers/facebook_auth_controller.ex
 
 defmodule AppWeb.FacebookAuthController do
-  use Phoenix.Controller
+  use AppWeb, :controller
 
   def login(conn, params) do
 
@@ -231,11 +227,6 @@ It eventually sends back the object below which identifies the user :eyes:
 }
 ```
 
-A long-term "access_token" is delivered.
-The app can interact with the Facebook ecosystem on behalf of the user with this token. These tokens should be saved in the database and appended to a session. If you intend to do so, have a look at the data deletion policy at the end.
-
-> If you simply need to authenticate a user, this token is useless and everything is fine.
-
 ### A note on SSL certificate :lock:
 
 **TL;DR**: if you use this module, you don't need a reverse proxy in DEV mode.
@@ -264,9 +255,10 @@ Of course, your app is still running as normal behind, on <http://localhost:4000
 ### SDK :thought_balloon: ?
 
 The [Facebook SDK](https://developers.facebook.com/docs/javascript/quickstart) is the alternative _authentication from the browser_.
-You **need** to reverse proxy your app (_and also enable the JSSDK in Facebook's app settings_). With Caddyserver, this is made easy for your dev mode.
+You **need** to reverse proxy your app (_and also enable the JS-SDK in Facebook's app settings_). With Caddyserver, this is made easy for your dev mode.
 
-The SDK usage is demonstrated in the companion repo: **<TODO: elixir_auth_facebook_demo>**.
+The SDK usage is demonstrated in the companion repo:
+"dwyl/elixir_auth_facebook_demo".
 
 This solution is preferable when running a free app as you consume less server CPU.
 
