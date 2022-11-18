@@ -18,6 +18,7 @@ defmodule ElixirAuthFacebook.HTTPoisonMock do
 
   @url_http_exchange "https://graph.facebook.com/v15.0/oauth/access_token?client_id=#{@app_id}&client_secret=#{@app_secret}&code=code&redirect_uri=#{@http}&state=#{@app_state}"
 
+  @doc false
   def get!(@url_http_exchange) do
     %{
       host: "localhost",
@@ -28,7 +29,7 @@ defmodule ElixirAuthFacebook.HTTPoisonMock do
 
   # user id retrieve with token in data
   @url_data "https://graph.facebook.com/debug_token?access_token=#{@app_id}%7CABCD&input_token=AT"
-
+  @doc false
   def get!(@url_data) do
     %{
       body:
@@ -41,7 +42,7 @@ defmodule ElixirAuthFacebook.HTTPoisonMock do
 
   # simulate wrong token
   @url_data_wrong "https://graph.facebook.com/debug_token?access_token=#{@app_id}%7CABCD&input_token=A"
-
+  @doc false
   def get!(@url_data_wrong) do
     %{
       body:
@@ -54,7 +55,7 @@ defmodule ElixirAuthFacebook.HTTPoisonMock do
 
   # user profile retrieve with id and token
   @url_profile "https://graph.facebook.com/v15.0/me?fields=id,email,name,picture&access_token=AT"
-
+  @doc false
   def get!(@url_profile) do
     %{
       body:

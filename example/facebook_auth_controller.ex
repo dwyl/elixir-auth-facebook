@@ -1,5 +1,5 @@
 defmodule AppWeb.FacebookAuthController do
-  use Phoenix.Controller
+  use AppWeb, :controller
 
   def login(conn, params) do
     with {:ok, profile} <- ElixirAuthFacebook.handle_callback(conn, params) do
