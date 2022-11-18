@@ -8,7 +8,7 @@ import Config
 #   app_secret: put here the app secret from Facebook; ex: "A1B2C3",
 #   app_state: generate it with mix gen.secret 32; ex: "g0TzQq6hHAEDbvdqxLU8ltfVin+N6528",
 
-config :elixir_auth_facebook,
-  app_id: "1234",
-  app_secret: "ABCD",
-  app_state: "1234"
+# config :elixir_auth_facebook,
+#   app_id: "1234",
+#   app_secret: "ABCD",
+#   app_state: "1234"

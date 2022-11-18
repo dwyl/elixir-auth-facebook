@@ -1,21 +1,6 @@
 defmodule ElixirAuthFacebookTest do
   use ExUnit.Case, async: true
 
-  test "raising on missing env" do
-    env_app_id = System.get_env("FACEBOOK_APP_ID")
-    env_app_secret = System.get_env("FACEBOOK_APP_SECRET")
-    env_app_state = System.get_env("FACEBOOK_STATE")
-
-    if env_app_id == nil,
-      do: assert_raise(RuntimeError, "App ID missing", fn -> raise "App ID missing" end)
-
-    if env_app_secret == nil,
-      do: assert_raise(RuntimeError, "App secret missing", fn -> raise "App secret missing" end)
-
-    if env_app_state == nil,
-      do: assert_raise(RuntimeError, "App state missing", fn -> raise "App state missing" end)
-  end
-
   test "credentials & config" do
     env_app_id = System.get_env("FACEBOOK_APP_ID")
     config_app_id = Application.get_env(:elixir_auth_facebook, :app_id)
@@ -28,9 +13,25 @@ defmodule ElixirAuthFacebookTest do
       assert env_app_id == ElixirAuthFacebook.app_id()
     end
 
+    if env_app_id == nil && config_app_id == nil do
+      assert_raise(RuntimeError, "App ID missing\n", fn -> ElixirAuthFacebook.app_id() end)
+
+      assert_raise(RuntimeError, "App ID missing\n", fn ->
+        ElixirAuthFacebook.app_access_token()
+      end)
+    end
+
     if env_app_secret != nil do
       assert env_app_secret == config_app_secret
       assert env_app_secret == ElixirAuthFacebook.app_secret()
+    end
+
+    if env_app_secret == nil && config_app_secret == nil do
+      assert_raise(RuntimeError, "App Secret missing\n", fn -> ElixirAuthFacebook.app_secret() end)
+
+      assert_raise(RuntimeError, "App ID missing\n", fn ->
+        ElixirAuthFacebook.app_access_token()
+      end)
     end
 
     if env_app_id != nil && env_app_secret != nil do
@@ -185,8 +186,6 @@ defmodule ElixirAuthFacebookTest do
            |> ElixirAuthFacebook.get_profile()
            |> ElixirAuthFacebook.check_profile() ==
              {:error, {:check_profile, {:get_profile2, "renew your credentials"}}}
-
-    #  {:check_profile, {:get_profile, {:get_data, "Error validating client secret."}}}
   end
 
   test "handle user positive" do
@@ -240,6 +239,3 @@ defmodule ElixirAuthFacebookTest do
   #   end
   # end
 end
-
-# wrong app_id: {:check_profile, {:get_profile, {:get_data, "Error validating application. Cannot get application info due to a system error."}}}
-# wrong app_secret: {:check_profile, {:get_profile, {:get_data, "Error validating client secret."}}}
